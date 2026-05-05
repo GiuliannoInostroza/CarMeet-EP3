@@ -1,0 +1,15 @@
+@'
+.vscode/
+.idea/
+*.iml
+*.class
+target/
+*.log
+.DS_Store
+Thumbs.db
+.gemini/
+.cursor/
+.continue/
+.claude/
+*.env
+'@ | Out-File -Encoding utf8 .gitignore

@@ -11,8 +11,8 @@
 	<groupId>com.CarMeet</groupId>
 	<artifactId>auth-user-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>auth-user-service</name>
+	<description>auth-user-service</description>
 	<url/>
 	<licenses>
 		<license/>

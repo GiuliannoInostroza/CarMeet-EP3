@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.CarMeet</groupId>
-	<artifactId>auth-user-service</artifactId>
+	<artifactId>live-scoreboard-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>live-scoreboard-service</name>
+	<description>live-scoreboard-service</description>
 	<url/>
 	<licenses>
 		<license/>

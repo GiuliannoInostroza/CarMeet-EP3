@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.CarMeet</groupId>
-	<artifactId>auth-user-service</artifactId>
+	<artifactId>venue-capacity-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>venue-capacity-service</name>
+	<description>venue-capacity-service</description>
 	<url/>
 	<licenses>
 		<license/>

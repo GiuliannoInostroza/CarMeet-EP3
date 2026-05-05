@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'com.CarMeet.auth-user-service' is invalid and this project uses 'com.CarMeet.auth_user_service' instead.
+* The original package name 'com.CarMeet.analytics-report-service' is invalid and this project uses 'com.CarMeet.auth_user_service' instead.
 
 # Getting Started
 

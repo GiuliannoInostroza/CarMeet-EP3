@@ -1,0 +1,28 @@
+# Forzar saltos de línea LF (Unix-style) en todos los archivos de texto
+* text=auto eol=lf
+
+# Archivos que deben mantener CRLF (Windows)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Archivos binarios
+*.jar binary
+*.war binary
+*.class binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+
+# Properties y XML deben ser texto plano
+*.properties text
+*.xml text
+*.java text
+*.md text
+*.sql text
+*.json text
+*.yaml text
+*.yml text

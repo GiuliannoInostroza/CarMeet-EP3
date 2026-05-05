@@ -1,0 +1,58 @@
+# Si no existe, lo crea. Si existe, lo sobrescribe con el contenido correcto.
+Set-Content -Path .gitignore -Value @"
+# IDE y Editores
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Compilados y builds
+*.class
+target/
+build/
+dist/
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+
+# Sistema Operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# AI Assistants (esto SÍ debe ignorarse)
+.gemini/
+.cursor/
+.continue/
+.claude/
+.roo/
+
+# Variables de entorno sensibles (opcional, si las usas)
+*.env
+.env.local
+.env.production
+
+# Archivos temporales de Java
+hs_err_pid*
+replay_pid*
+*.pid
+
+# Maven
+.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot
+.springBeans

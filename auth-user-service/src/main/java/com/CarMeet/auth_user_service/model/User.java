@@ -1,7 +1,5 @@
 package com.CarMeet.auth_user_service.model;
 
-import javax.management.relation.Role;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,6 +29,6 @@ public class User {
     private String email;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private String role;
 
 }

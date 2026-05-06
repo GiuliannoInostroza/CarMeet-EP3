@@ -10,16 +10,16 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>analytics-report-service</module>
-        <module>auth-user-service</module>
-        <module>competition-reg-service</module>
-        <module>event-core-service</module>
-        <module>live-scoreboard-service</module>
-        <module>notification-log-service</module>
-        <module>payment-mock-service</module>
-        <module>ticketing-service</module>
-        <module>vehicle-registry-service</module>
-        <module>venue-capacity-service</module>
+        <module>ms-analytics-report</module>
+        <module>ms-auth-user</module>
+        <module>ms-competition-reg</module>
+        <module>ms-event-core</module>
+        <module>ms-live-scoreboard</module>
+        <module>ms-notification-log</module>
+        <module>ms-payment-mock</module>
+        <module>ms-ticketing</module>
+        <module>ms-vehicle-registry</module>
+        <module>ms-venue-capacity</module>
     </modules>
 
 </project>

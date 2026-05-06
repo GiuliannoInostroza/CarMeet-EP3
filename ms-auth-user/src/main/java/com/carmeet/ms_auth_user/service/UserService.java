@@ -1,6 +1,5 @@
 ﻿package com.carmeet.ms_auth_user.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.carmeet.ms_auth_user.dto.UserRequestDTO;
@@ -14,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-    @Autowired
     private final UserRepository userRepository;
 
     public User createUser(UserRequestDTO dto) {
@@ -31,8 +29,7 @@ public class UserService {
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
 
-        log.info("Usuario creado existosamente en la base de datos.");
+        log.info("Usuario creado exitosamente en la base de datos.");
         return userRepository.save(user);
     }
 }
-

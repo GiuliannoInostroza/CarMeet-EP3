@@ -1,5 +1,11 @@
 package com.carmeet.ms_auth_user.dto;
 
-public class AuthResponse {
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
+public class AuthResponse {
+    private String accessToken;
+    private String refreshToken;
 }

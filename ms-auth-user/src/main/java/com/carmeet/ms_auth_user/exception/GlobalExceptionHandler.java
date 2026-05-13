@@ -2,39 +2,47 @@ package com.carmeet.ms_auth_user.exception;
 
 import com.carmeet.ms_auth_user.dto.ApiResponse;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.validation.FieldError;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ðŸ”´ VALIDACIÃ“N
+    // 400 — Validacion de campos (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> handleValidation(MethodArgumentNotValidException ex) {
-
-        Map<String, String> errores = new HashMap<>();
-
+        Map<String, String> errores = new LinkedHashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errores.put(error.getField(), error.getDefaultMessage());
         }
-
         return ResponseEntity.badRequest().body(
                 ApiResponse.builder()
                         .success(false)
-                        .message("ValidaciÃ³n fallida")
+                        .message("Validacion fallida")
                         .error(errores)
                         .build());
     }
 
-    // ðŸ” 403
+    // 401 — Credenciales invalidas
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(401).body(
+                ApiResponse.builder()
+                        .success(false)
+                        .message("Credenciales invalidas")
+                        .build());
+    }
+
+    // 403 — Sin permiso
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Object>> handle403(Exception ex) {
+    public ResponseEntity<ApiResponse<Object>> handle403(AccessDeniedException ex) {
         return ResponseEntity.status(403).body(
                 ApiResponse.builder()
                         .success(false)
@@ -42,33 +50,52 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // ðŸ”Ž 401 (login fallido)
-    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
-    public ResponseEntity<ApiResponse<Object>> handleBadCredentials(Exception ex) {
-        return ResponseEntity.status(401).body(
+    // 409 — Conflicto: registro duplicado (ej. username ya existe)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleConflict(DataIntegrityViolationException ex) {
+        String msg = ex.getRootCause() != null ? ex.getRootCause().getMessage() : ex.getMessage();
+        // Simplificar el mensaje para el cliente
+        if (msg != null && msg.contains("Duplicate entry")) {
+            String campo = msg.replaceAll(".*Duplicate entry '(.+?)' for key '(.+?)'.*", "El valor '$1' ya existe en '$2'");
+            msg = campo;
+        }
+        return ResponseEntity.status(409).body(
                 ApiResponse.builder()
                         .success(false)
-                        .message("Credenciales invÃ¡lidas")
+                        .message(msg)
                         .build());
     }
 
-    // ðŸ”Ž 404 / RuntimeException
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<Object>> handleNotFound(RuntimeException ex) {
+    // 404 — Recurso no encontrado (NoSuchElementException, entidad no encontrada)
+    @ExceptionHandler({
+        java.util.NoSuchElementException.class,
+        jakarta.persistence.EntityNotFoundException.class
+    })
+    public ResponseEntity<ApiResponse<Object>> handleNotFound(Exception ex) {
         return ResponseEntity.status(404).body(
+                ApiResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage() != null ? ex.getMessage() : "Recurso no encontrado")
+                        .build());
+    }
+
+    // 400 — RuntimeException generica de negocio (parametros invalidos, etc.)
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRuntime(RuntimeException ex) {
+        return ResponseEntity.status(400).body(
                 ApiResponse.builder()
                         .success(false)
                         .message(ex.getMessage())
                         .build());
     }
 
-    // ðŸ’¥ 500
+    // 500 — Error inesperado
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
         return ResponseEntity.status(500).body(
                 ApiResponse.builder()
                         .success(false)
-                        .message("Error interno")
+                        .message("Error interno del servidor")
                         .build());
     }
 }

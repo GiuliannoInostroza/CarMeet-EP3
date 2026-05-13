@@ -24,25 +24,30 @@ public class AnalyticsController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<ReporteDTO>>> listar() {
         List<ReporteDTO> lista = service.listar().stream().map(this::toDTO).collect(Collectors.toList());
-        return ResponseEntity.ok(ApiResponse.<List<ReporteDTO>>builder().success(true).message("Listado").data(lista).build());
+        return ResponseEntity
+                .ok(ApiResponse.<List<ReporteDTO>>builder().success(true).message("Listado").data(lista).build());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ReporteDTO>> obtenerPorId(@PathVariable Long id) {
         ReporteDTO dto = toDTO(service.obtenerPorId(id));
-        return ResponseEntity.ok(ApiResponse.<ReporteDTO>builder().success(true).message("Encontrado").data(dto).build());
+        return ResponseEntity
+                .ok(ApiResponse.<ReporteDTO>builder().success(true).message("Encontrado").data(dto).build());
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<ReporteDTO>> guardar(@Valid @RequestBody ReporteDTO dto) {
         Reporte nuevo = service.guardar(toEntity(dto));
-        return ResponseEntity.status(201).body(ApiResponse.<ReporteDTO>builder().success(true).message("Creado").data(toDTO(nuevo)).build());
+        return ResponseEntity.status(201)
+                .body(ApiResponse.<ReporteDTO>builder().success(true).message("Creado").data(toDTO(nuevo)).build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ReporteDTO>> actualizar(@PathVariable Long id, @Valid @RequestBody ReporteDTO dto) {
+    public ResponseEntity<ApiResponse<ReporteDTO>> actualizar(@PathVariable Long id,
+            @Valid @RequestBody ReporteDTO dto) {
         Reporte actualizado = service.actualizar(id, toEntity(dto));
-        return ResponseEntity.ok(ApiResponse.<ReporteDTO>builder().success(true).message("Actualizado").data(toDTO(actualizado)).build());
+        return ResponseEntity.ok(ApiResponse.<ReporteDTO>builder().success(true).message("Actualizado")
+                .data(toDTO(actualizado)).build());
     }
 
     @DeleteMapping("/{id}")
@@ -56,7 +61,7 @@ public class AnalyticsController {
         dto.setId(e.getId());
         dto.setTotalEventos(e.getTotalEventos());
         dto.setFechaGeneracion(e.getFechaGeneracion());
-        if(e.getMetricas() != null) {
+        if (e.getMetricas() != null) {
             dto.setMetricas(e.getMetricas().stream().map(p -> {
                 MetricaDTO pdto = new MetricaDTO();
                 pdto.setId(p.getId());
@@ -71,7 +76,7 @@ public class AnalyticsController {
         Reporte e = new Reporte();
         e.setTotalEventos(dto.getTotalEventos());
         e.setFechaGeneracion(dto.getFechaGeneracion());
-        if(dto.getMetricas() != null) {
+        if (dto.getMetricas() != null) {
             e.setMetricas(dto.getMetricas().stream().map(pdto -> {
                 Metrica p = new Metrica();
                 p.setNombre(pdto.getNombre());

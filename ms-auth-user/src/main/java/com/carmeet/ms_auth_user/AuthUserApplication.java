@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_auth_user;
+package com.carmeet.ms_auth_user;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

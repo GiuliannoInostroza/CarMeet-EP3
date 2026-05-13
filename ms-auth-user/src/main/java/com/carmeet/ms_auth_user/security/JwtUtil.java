@@ -14,7 +14,7 @@ public class JwtUtil {
 
     private final Key key;
 
-    // ⏱ tiempos de expiración
+    // â± tiempos de expiraciÃ³n
     private final long EXPIRATION_MS = 1000 * 60 * 60;           // 1 hora
     private final long REFRESH_EXPIRATION_MS = 1000 * 60 * 60 * 24; // 24 horas
 
@@ -22,7 +22,7 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    // 🔐 GENERAR ACCESS TOKEN
+    // ðŸ” GENERAR ACCESS TOKEN
     public String generarToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
@@ -33,7 +33,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // 🔄 GENERAR REFRESH TOKEN
+    // ðŸ”„ GENERAR REFRESH TOKEN
     public String generarRefreshToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -44,7 +44,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // ✅ VALIDAR TOKEN
+    // âœ… VALIDAR TOKEN
     public boolean esValido(String token) {
         try {
             Claims claims = getClaims(token);
@@ -54,22 +54,22 @@ public class JwtUtil {
         }
     }
 
-    // 👤 OBTENER USUARIO
+    // ðŸ‘¤ OBTENER USUARIO
     public String obtenerUsuario(String token) {
         return getClaims(token).getSubject();
     }
 
-    // 🔐 OBTENER ROLE
+    // ðŸ” OBTENER ROLE
     public String obtenerRole(String token) {
         return getClaims(token).get("role", String.class);
     }
 
-    // 🔄 VALIDAR SI ES REFRESH TOKEN
+    // ðŸ”„ VALIDAR SI ES REFRESH TOKEN
     public boolean esRefreshToken(String token) {
         return "refresh".equals(getClaims(token).get("type"));
     }
 
-    // 🔍 EXTRAER CLAIMS
+    // ðŸ” EXTRAER CLAIMS
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)

@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_analytics_report;
+package com.carmeet.ms_analytics_report;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,4 +11,3 @@ public class AnalyticsReportApplication {
 	}
 
 }
-

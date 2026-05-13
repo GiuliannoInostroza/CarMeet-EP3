@@ -14,6 +14,7 @@ public class Requisito {
     private Long id;
 
     private String nombre; // Ej: Revision Tecnica, Casco
+    private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inscripcion_id")

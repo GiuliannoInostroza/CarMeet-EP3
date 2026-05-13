@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(
                 ApiResponse.builder()
                         .success(false)
-                        .message("Validación fallida")
+                        .message("ValidaciÃ³n fallida")
                         .error(errores)
                         .build()
         );

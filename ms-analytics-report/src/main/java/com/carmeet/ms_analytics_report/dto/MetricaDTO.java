@@ -12,8 +12,10 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MetricaDTO {
-    
-    @NotBlank(message = "El nombre de la métrica es obligatorio")
+
+    private Long id;
+
+    @NotBlank(message = "El nombre de la metrica es obligatorio")
     private String nombre;
 
     @NotNull(message = "El valor es obligatorio")

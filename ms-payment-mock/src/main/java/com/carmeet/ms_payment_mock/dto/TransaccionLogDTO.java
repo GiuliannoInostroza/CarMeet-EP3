@@ -11,7 +11,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransaccionLogDTO {
-    
+
+    private Long id;
+
     @NotBlank(message = "El estado del log es obligatorio")
     private String estado;
 }

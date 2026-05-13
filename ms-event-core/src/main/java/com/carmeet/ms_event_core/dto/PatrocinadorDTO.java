@@ -11,10 +11,12 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatrocinadorDTO {
-    
+
+    private Long id;
+
     @NotBlank(message = "El nombre del patrocinador es obligatorio")
     private String nombre;
-    
+
     @NotBlank(message = "El nivel es obligatorio")
     private String nivel;
 }

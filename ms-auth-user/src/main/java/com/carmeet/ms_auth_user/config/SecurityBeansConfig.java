@@ -12,13 +12,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class SecurityBeansConfig {
 
-    // 🔐 Encriptador de contraseñas
+    // ðŸ” Encriptador de contraseÃ±as
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 🔐 AuthenticationManager necesario para login
+    // ðŸ” AuthenticationManager necesario para login
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {

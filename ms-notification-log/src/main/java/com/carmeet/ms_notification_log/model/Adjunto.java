@@ -13,8 +13,9 @@ public class Adjunto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombreArchivo; 
+    private String nombreArchivo;
     private String url;
+    private String rutaArchivo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notificacion_id")

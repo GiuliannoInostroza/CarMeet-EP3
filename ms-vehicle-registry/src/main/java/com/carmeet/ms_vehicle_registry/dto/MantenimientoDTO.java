@@ -11,7 +11,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MantenimientoDTO {
-    
-    @NotBlank(message = "La descripción del mantenimiento es obligatoria")
+
+    private Long id;
+
+    @NotBlank(message = "La descripcion del mantenimiento es obligatoria")
     private String descripcion;
 }

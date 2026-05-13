@@ -70,7 +70,7 @@ public class SecurityConfig {
 
             ApiResponse<Object> res = ApiResponse.builder()
                     .success(false)
-                    .message("No autenticado o token inválido")
+                    .message("No autenticado o token invÃ¡lido")
                     .build();
 
             new ObjectMapper().writeValue(response.getOutputStream(), res);

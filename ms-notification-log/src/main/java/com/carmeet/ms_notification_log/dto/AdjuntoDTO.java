@@ -11,10 +11,14 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdjuntoDTO {
-    
+
+    private Long id;
+
     @NotBlank(message = "El nombre del archivo es obligatorio")
     private String nombreArchivo;
 
     @NotBlank(message = "La URL del adjunto es obligatoria")
     private String url;
+
+    private String rutaArchivo;
 }

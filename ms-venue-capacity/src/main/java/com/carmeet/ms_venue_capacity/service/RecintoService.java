@@ -55,7 +55,7 @@ public class RecintoService {
     public Recinto registrarIngreso(Long id) {
         Recinto r = obtenerPorId(id);
         if (r.getOcupacionActual() >= r.getCapacidadMaxima()) {
-            throw new RuntimeException("¡Recinto Lleno! Capacidad máxima alcanzada.");
+            throw new RuntimeException("Â¡Recinto Lleno! Capacidad mÃ¡xima alcanzada.");
         }
         r.setOcupacionActual(r.getOcupacionActual() + 1);
         return repo.save(r);

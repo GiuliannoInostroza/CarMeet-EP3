@@ -14,6 +14,7 @@ public class Beneficio {
     private Long id;
 
     private String nombre; // Ej: Pase a Pits, Merchandising
+    private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id")

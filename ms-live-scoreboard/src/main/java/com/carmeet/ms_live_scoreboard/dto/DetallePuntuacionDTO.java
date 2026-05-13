@@ -12,10 +12,14 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DetallePuntuacionDTO {
-    
-    @NotBlank(message = "La categoría del detalle es obligatoria")
+
+    private Long id;
+
+    @NotBlank(message = "La categoria del detalle es obligatoria")
     private String categoria;
 
     @NotNull
     private Integer puntosAsignados;
+
+    private String descripcion;
 }

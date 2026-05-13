@@ -11,7 +11,11 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BeneficioDTO {
-    
+
+    private Long id;
+
     @NotBlank(message = "El nombre del beneficio es obligatorio")
     private String nombre;
+
+    private String descripcion;
 }

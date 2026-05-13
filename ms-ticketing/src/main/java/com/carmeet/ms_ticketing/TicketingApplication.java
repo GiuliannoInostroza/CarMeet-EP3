@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_ticketing;
+package com.carmeet.ms_ticketing;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

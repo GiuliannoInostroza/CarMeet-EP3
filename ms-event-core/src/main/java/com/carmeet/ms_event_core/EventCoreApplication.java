@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_event_core;
+package com.carmeet.ms_event_core;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

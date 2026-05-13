@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_venue_capacity;
+package com.carmeet.ms_venue_capacity;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -29,7 +29,7 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
 
-    // 🔹 REGISTER
+    // ðŸ”¹ REGISTER
     public AuthResponse register(RegisterRequest req) {
 
         Usuario user = new Usuario();
@@ -45,7 +45,7 @@ public class AuthService {
         return new AuthResponse(access, refresh);
     }
 
-    // 🔹 LOGIN
+    // ðŸ”¹ LOGIN
     public AuthResponse login(LoginRequest req) {
 
         authManager.authenticate(
@@ -60,14 +60,14 @@ public class AuthService {
         return new AuthResponse(access, refresh);
     }
 
-    // 🔹 REFRESH
+    // ðŸ”¹ REFRESH
     public AuthResponse refresh(String refreshToken) {
 
         RefreshToken token = refreshRepo.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Refresh inválido"));
+                .orElseThrow(() -> new RuntimeException("Refresh invÃ¡lido"));
 
         if (!jwtUtil.esValido(refreshToken) || !jwtUtil.esRefreshToken(refreshToken)) {
-            throw new RuntimeException("Refresh token inválido");
+            throw new RuntimeException("Refresh token invÃ¡lido");
         }
 
         Usuario user = usuarioRepo.findByUsername(token.getUsername()).get();

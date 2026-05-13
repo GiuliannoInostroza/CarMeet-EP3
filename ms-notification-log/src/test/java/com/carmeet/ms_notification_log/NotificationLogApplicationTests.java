@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_notification_log;
+package com.carmeet.ms_notification_log;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

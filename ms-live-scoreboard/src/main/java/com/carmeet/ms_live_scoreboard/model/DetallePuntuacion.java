@@ -15,6 +15,7 @@ public class DetallePuntuacion {
 
     private String categoria; // Ej: Drift, Velocidad
     private Integer puntosAsignados;
+    private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "puntuacion_id")

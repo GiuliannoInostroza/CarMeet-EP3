@@ -14,7 +14,7 @@ import java.util.*;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 🔴 VALIDACIÓN
+    // ðŸ”´ VALIDACIÃ“N
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> handleValidation(MethodArgumentNotValidException ex) {
 
@@ -27,12 +27,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(
                 ApiResponse.builder()
                         .success(false)
-                        .message("Validación fallida")
+                        .message("ValidaciÃ³n fallida")
                         .error(errores)
                         .build());
     }
 
-    // 🔐 403
+    // ðŸ” 403
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Object>> handle403(Exception ex) {
         return ResponseEntity.status(403).body(
@@ -42,17 +42,17 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // 🔎 401 (login fallido)
+    // ðŸ”Ž 401 (login fallido)
     @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Object>> handleBadCredentials(Exception ex) {
         return ResponseEntity.status(401).body(
                 ApiResponse.builder()
                         .success(false)
-                        .message("Credenciales inválidas")
+                        .message("Credenciales invÃ¡lidas")
                         .build());
     }
 
-    // 🔎 404 / RuntimeException
+    // ðŸ”Ž 404 / RuntimeException
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFound(RuntimeException ex) {
         return ResponseEntity.status(404).body(
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // 💥 500
+    // ðŸ’¥ 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
         return ResponseEntity.status(500).body(

@@ -11,7 +11,11 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequisitoDTO {
-    
+
+    private Long id;
+
     @NotBlank(message = "El nombre del requisito es obligatorio")
     private String nombre;
+
+    private String descripcion;
 }

@@ -15,7 +15,6 @@ import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
 @Slf4j
 @Component
@@ -36,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             String token = header.substring(7);
 
-            // Evita doble autenticación
+            // Evita doble autenticaciÃ³n
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 if (jwtUtil.esValido(token)) {
@@ -52,17 +51,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(auth);
 
-                    log.info("Usuario autenticado",
-                            keyValue("user", user),
-                            keyValue("role", role)
-                    );
+                    log.info("Usuario autenticado: user={}, role={}", user, role);
 
                 } else {
-                    log.warn("Token inválido");
+                    log.warn("Token invÃ¡lido");
 
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json");
-                    res.getWriter().write("{\"error\":\"Token inválido\"}");
+                    res.getWriter().write("{\"error\":\"Token invÃ¡lido\"}");
                     return;
                 }
             }

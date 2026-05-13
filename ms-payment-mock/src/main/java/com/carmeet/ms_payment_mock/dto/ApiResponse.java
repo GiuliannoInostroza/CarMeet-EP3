@@ -1,4 +1,15 @@
 package com.carmeet.ms_payment_mock.dto;
 
-public class ApiResponse {
+import lombok.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ApiResponse<T> {
+
+    private boolean success;
+    private String message;
+    private T data;
+    private Object error;
 }

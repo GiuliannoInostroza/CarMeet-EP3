@@ -1,4 +1,6 @@
 package com.carmeet.ms_venue_capacity.repository;
 
-public interface RecintoRepository {
-}
+import com.carmeet.ms_venue_capacity.model.Recinto;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RecintoRepository extends JpaRepository<Recinto, Long> {}

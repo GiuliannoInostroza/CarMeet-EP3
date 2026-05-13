@@ -1,0 +1,432 @@
+Para que tu proyecto **CarMeet** sea irreprochable y parezca escrito exactamente por la misma mano (tu profe), debemos aplicar sus patrones estructurales:
+
+1. **Lombok intensivo** (`@Data`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor`).
+2. **Manejo de excepciones** usando `EntityNotFoundException` o `RuntimeException` capturadas por el `GlobalExceptionHandler`.
+3. **Inyección de dependencias** exclusivamente a través de `@RequiredArgsConstructor`.
+4. **Respuestas estandarizadas** envolviendo los retornos en tu `ApiResponse`.
+5. **Código formateado verticalmente** (nada de variables o métodos en una sola línea).
+
+Aquí tienes la **FASE 5** y **FASE 6** refactorizadas al estilo del profe, sin saltar nada.
+
+---
+
+### FASE 5: LA LÓGICA DE NEGOCIO (Los 9 Microservicios)
+
+#### 1. ms-event-core (Puerto 8091)
+
+**`application.properties` y `db/migration/V1__init.sql**`
+
+```properties
+spring.application.name=ms-event-core
+server.port=8091
+spring.datasource.url=jdbc:mysql://localhost:3306/db_event
+spring.datasource.username=root
+spring.datasource.password=root
+spring.flyway.enabled=true
+
+```
+
+```sql
+CREATE TABLE evento (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY, 
+    nombre VARCHAR(100), 
+    fecha VARCHAR(50), 
+    ubicacion VARCHAR(100)
+);
+
+```
+
+**Model, DTO, Repository, Service y Controller**
+
+```java
+// MODEL
+@Entity
+@Table(name = "evento")
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+public class Evento {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String nombre;
+    private String fecha;
+    private String ubicacion;
+}
+
+// DTO
+@Data @Builder
+public class EventoDTO {
+    @NotBlank(message = "El nombre es obligatorio")
+    private String nombre;
+    @NotBlank
+    private String fecha;
+    @NotBlank
+    private String ubicacion;
+}
+
+// REPOSITORY
+public interface EventoRepository extends JpaRepository<Evento, Long> {}
+
+// SERVICE
+@Service
+@RequiredArgsConstructor
+public class EventoService {
+
+    private final EventoRepository repo;
+
+    public Evento crear(EventoDTO dto) {
+        Evento e = Evento.builder()
+                .nombre(dto.getNombre())
+                .fecha(dto.getFecha())
+                .ubicacion(dto.getUbicacion())
+                .build();
+        return repo.save(e);
+    }
+
+    public List<Evento> listar() {
+        return repo.findAll();
+    }
+}
+
+// CONTROLLER
+@RestController
+@RequestMapping("/api/events")
+@RequiredArgsConstructor
+public class EventoController {
+
+    private final EventoService service;
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Evento>> crear(@Valid @RequestBody EventoDTO dto) {
+        return ResponseEntity.ok(ApiResponse.<Evento>builder()
+                .success(true)
+                .data(service.crear(dto))
+                .build());
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<ApiResponse<List<Evento>>> listar() {
+        return ResponseEntity.ok(ApiResponse.<List<Evento>>builder()
+                .success(true)
+                .data(service.listar())
+                .build());
+    }
+}
+
+```
+
+---
+
+#### 2. ms-vehicle-registry (Puerto 8092)
+
+```java
+// MODEL
+@Entity
+@Table(name = "vehiculo")
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+public class Vehiculo {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String patente;
+    private String marca;
+    private String modelo;
+    private String username;
+}
+
+// DTO
+@Data
+public class VehiculoDTO {
+    @NotBlank private String patente;
+    @NotBlank private String marca;
+    @NotBlank private String modelo;
+}
+
+// SERVICE
+@Service
+@RequiredArgsConstructor
+public class VehiculoService {
+
+    private final VehiculoRepository repo;
+
+    public Vehiculo registrar(VehiculoDTO dto) {
+        Vehiculo v = Vehiculo.builder()
+                .patente(dto.getPatente())
+                .marca(dto.getMarca())
+                .modelo(dto.getModelo())
+                .username(SecurityContextHolder.getContext().getAuthentication().getName()) // Extraído del token
+                .build();
+        return repo.save(v);
+    }
+}
+
+```
+
+---
+
+#### 3. ms-ticketing (Puerto 8093)
+
+*Requiere WebClient Config.*
+
+```java
+// CONFIG
+@Configuration
+public class WebClientConfig {
+    @Bean
+    public WebClient webClient() {
+        return WebClient.builder().build();
+    }
+}
+
+// SERVICE
+@Service
+@RequiredArgsConstructor
+public class TicketService {
+
+    private final TicketRepository repo;
+    private final WebClient webClient;
+
+    public Ticket comprar(TicketDTO dto, String token) {
+        
+        Ticket t = Ticket.builder()
+                .eventoId(dto.getEventoId())
+                .precio(dto.getPrecio())
+                .estado("PENDIENTE")
+                .username(SecurityContextHolder.getContext().getAuthentication().getName())
+                .build();
+
+        t = repo.save(t);
+
+        try {
+            webClient.post()
+                    .uri("http://localhost:8094/api/payments/procesar")
+                    .header("Authorization", "Bearer " + token)
+                    .bodyValue(t)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+            
+            t.setEstado("PAGADO");
+        } catch (Exception e) {
+            t.setEstado("RECHAZADO");
+        }
+
+        return repo.save(t);
+    }
+}
+
+// CONTROLLER
+@RestController
+@RequestMapping("/api/tickets")
+@RequiredArgsConstructor
+public class TicketController {
+
+    private final TicketService service;
+
+    @PostMapping("/comprar")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<Ticket>> comprar(
+            @Valid @RequestBody TicketDTO dto, 
+            @RequestHeader("Authorization") String authHeader) {
+        
+        // Limpiamos el Bearer para pasar solo el token al service
+        String token = authHeader.substring(7); 
+        
+        return ResponseEntity.ok(ApiResponse.<Ticket>builder()
+                .success(true)
+                .data(service.comprar(dto, token))
+                .build());
+    }
+}
+
+```
+
+---
+
+#### 4. ms-payment-mock (Puerto 8094)
+
+```java
+// SERVICE
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class PagoService {
+
+    private final PagoRepository repo;
+
+    public void procesarPago(PagoDTO dto) {
+        log.info("Procesando pago de ticket {} por monto {}", dto.getTicketId(), dto.getMonto());
+        
+        Pago p = Pago.builder()
+                .ticketId(dto.getTicketId())
+                .monto(dto.getMonto())
+                .build();
+                
+        repo.save(p);
+        // Simulación: siempre exitoso
+    }
+}
+
+```
+
+---
+
+#### 5. ms-venue-capacity (Puerto 8095)
+
+```java
+// SERVICE
+@Service
+@RequiredArgsConstructor
+public class RecintoService {
+
+    private final RecintoRepository repo;
+
+    public Recinto registrarIngreso(Long id) {
+        Recinto r = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Recinto no encontrado"));
+
+        if (r.getOcupacionActual() >= r.getCapacidadMaxima()) {
+            throw new RuntimeException("¡Recinto Lleno! Capacidad máxima alcanzada.");
+        }
+
+        r.setOcupacionActual(r.getOcupacionActual() + 1);
+        return repo.save(r);
+    }
+}
+
+```
+
+---
+
+#### 6. ms-competition-reg (Puerto 8096)
+
+```java
+// SERVICE
+@Service
+@RequiredArgsConstructor
+public class InscripcionService {
+
+    private final InscripcionRepository repo;
+
+    public Inscripcion inscribir(InscripcionDTO dto) {
+        Inscripcion i = Inscripcion.builder()
+                .vehiculoId(dto.getVehiculoId())
+                .categoria(dto.getCategoria())
+                .username(SecurityContextHolder.getContext().getAuthentication().getName())
+                .build();
+                
+        return repo.save(i);
+    }
+}
+
+```
+
+---
+
+#### 7. ms-live-scoreboard (Puerto 8097)
+
+```java
+// CONTROLLER
+@RestController
+@RequestMapping("/api/scoreboard")
+@RequiredArgsConstructor
+public class PuntuacionController {
+
+    private final PuntuacionService service;
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Puntuacion>> puntuar(@Valid @RequestBody PuntuacionDTO dto) {
+        return ResponseEntity.ok(ApiResponse.<Puntuacion>builder()
+                .success(true)
+                .data(service.registrarPuntos(dto))
+                .build());
+    }
+}
+
+```
+
+---
+
+#### 8. ms-notification-log (Puerto 8098)
+
+```java
+// SERVICE
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class NotificacionService {
+
+    private final NotificacionRepository repo;
+
+    public void enviar(NotificacionDTO dto) {
+        log.info("Simulando envío de correo a {}: {}", dto.getDestinatario(), dto.getMensaje());
+        
+        Notificacion n = Notificacion.builder()
+                .destinatario(dto.getDestinatario())
+                .mensaje(dto.getMensaje())
+                .build();
+                
+        repo.save(n);
+    }
+}
+
+```
+
+---
+
+#### 9. ms-analytics-report (Puerto 8099)
+
+```java
+// SERVICE
+@Service
+@RequiredArgsConstructor
+public class AnalyticsService {
+
+    private final ReporteRepository repo;
+    private final WebClient webClient;
+
+    public Reporte generarReporte(String token) {
+        List<?> eventos = webClient.get()
+                .uri("http://localhost:8091/api/events")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .bodyToMono(List.class)
+                .block();
+
+        Reporte r = Reporte.builder()
+                .totalEventos(eventos != null ? eventos.size() : 0)
+                .fechaGeneracion(new java.util.Date().toString())
+                .build();
+
+        return repo.save(r);
+    }
+}
+
+```
+
+---
+
+### FASE 6: Simulacro de Defensa (Ejercicios y Soluciones)
+
+Si el profesor te interroga sobre modificaciones rápidas, respóndele exactamente de esta forma técnica:
+
+**Prueba 1: "Haz que la capacidad máxima de un recinto no pueda ser número negativo al crearlo."**
+
+* **Solución:** Vas a `ms-venue-capacity`, paquete `dto`, clase `RecintoDTO`. Agregas `@Min(value = 1, message = "La capacidad debe ser mayor a 0")` sobre la variable `capacidadMaxima`. Guardas y reinicias.
+* **Defensa:** *"Profesor, agregué la validación JSR-380 (`@Min`) en el DTO. Al fallar la validación, el `GlobalExceptionHandler` captura la excepción `MethodArgumentNotValidException` y devuelve nuestro objeto `ApiResponse` formateado en JSON con un código HTTP 400 (Bad Request)."*
+
+**Prueba 2: "Cambia el puerto del microservicio de reportes porque choca con mi base de datos."**
+
+* **Solución:** Vas a `ms-analytics-report`, `src/main/resources/application.properties`. Cambias `server.port=8099` a `server.port=8105`. Reinicias.
+* **Defensa:** *"Listo, profesor. Como los microservicios son arquitectónicamente independientes, cambiar el puerto en el `application.properties` es suficiente. Solo debemos asegurar que los servicios clientes (vía `WebClient` o `Feign`) apunten a la nueva URL."*
+
+**Prueba 3: "Quiero que el endpoint de enviar notificaciones pueda ser usado sin token para hacer una prueba desde una web externa."**
+
+* **Solución:** Vas a `ms-notification-log`, paquete `config`, clase `SecurityConfig`. En `authorizeHttpRequests`, agregas: `.requestMatchers("/api/notificaciones/").permitAll()` justo antes de `.anyRequest().authenticated()`.
+* **Defensa:** *"Modifiqué la cadena de filtros en el `SecurityFilterChain`. Al colocar `permitAll()`, le indico a Spring Security que omita el paso por el `JwtFilter` para esa ruta específica, dejándola pública."*
+
+**Prueba 4: "Modifica la tabla de Vehículos, agrega el año del auto."**
+
+* **Solución:** NO modifiquen el archivo `V1__init.sql`. Creen un archivo nuevo llamado `V2__agregar_anio.sql` en la carpeta `db/migration`. Dentro escriban: `ALTER TABLE vehiculo ADD COLUMN anio INTEGER;`. Agreguen la variable `anio` en `Vehiculo.java` y en su DTO. Reinicien.
+* **Defensa:** *"Para no corromper el historial de migraciones de Flyway y mantener la integridad del Checksum de la versión 1, creé un script secuencial V2 con la instrucción `ALTER TABLE`, que es el estándar de la industria para evolucionar el esquema de BD en producción."*

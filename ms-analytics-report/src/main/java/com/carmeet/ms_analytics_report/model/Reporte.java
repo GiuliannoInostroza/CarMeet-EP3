@@ -2,6 +2,8 @@ package com.carmeet.ms_analytics_report.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "reporte")
@@ -9,6 +11,11 @@ import lombok.*;
 public class Reporte {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     private Integer totalEventos;
     private String fechaGeneracion;
+
+    @OneToMany(mappedBy = "reporte", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Metrica> metricas = new ArrayList<>();
 }

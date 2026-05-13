@@ -1,0 +1,14 @@
+CREATE TABLE ticket (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    evento_id BIGINT NOT NULL,
+    precio DOUBLE NOT NULL,
+    estado VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE beneficio (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ticket_id BIGINT,
+    descripcion VARCHAR(255) NOT NULL,
+    FOREIGN KEY (ticket_id) REFERENCES ticket(id) ON DELETE CASCADE
+);

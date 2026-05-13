@@ -1,0 +1,12 @@
+CREATE TABLE pago (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ticket_id BIGINT NOT NULL,
+    monto DOUBLE NOT NULL
+);
+
+CREATE TABLE transaccion_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    pago_id BIGINT,
+    estado VARCHAR(255) NOT NULL,
+    FOREIGN KEY (pago_id) REFERENCES pago(id) ON DELETE CASCADE
+);

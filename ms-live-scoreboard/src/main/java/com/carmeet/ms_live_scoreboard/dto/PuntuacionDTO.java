@@ -1,10 +1,20 @@
 package com.carmeet.ms_live_scoreboard.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import java.util.List;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 
 @Data
 public class PuntuacionDTO {
-    @NotNull private Long inscripcionId;
-    @NotNull private Integer puntos;
+    private Long id;
+
+    @NotNull(message = "El inscripcionId es obligatorio")
+    private Long inscripcionId;
+
+    @NotNull(message = "Los puntos son obligatorios")
+    private Integer puntos;
+
+    @Valid
+    private List<DetallePuntuacionDTO> detalles;
 }

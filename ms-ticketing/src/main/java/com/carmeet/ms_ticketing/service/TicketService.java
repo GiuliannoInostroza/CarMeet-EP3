@@ -1,45 +1,56 @@
 package com.carmeet.ms_ticketing.service;
 
-import com.carmeet.ms_ticketing.dto.TicketDTO;
 import com.carmeet.ms_ticketing.model.Ticket;
 import com.carmeet.ms_ticketing.repository.TicketRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TicketService {
 
     private final TicketRepository repo;
-    private final WebClient webClient;
 
-    public Ticket comprar(TicketDTO dto, String token) {
-        
-        Ticket t = Ticket.builder()
-                .eventoId(dto.getEventoId())
-                .precio(dto.getPrecio())
-                .estado("PENDIENTE")
-                .username(SecurityContextHolder.getContext().getAuthentication().getName())
-                .build();
+    public List<Ticket> listar() {
+        return repo.findAll();
+    }
 
-        t = repo.save(t);
+    public Ticket obtenerPorId(Long id) {
+        return repo.findById(id).orElseThrow(() -> new EntityNotFoundException("Ticket no encontrado con id: " + id));
+    }
 
-        try {
-            webClient.post()
-                    .uri("http://localhost:8094/api/payments/procesar")
-                    .header("Authorization", "Bearer " + token)
-                    .bodyValue(t)
-                    .retrieve()
-                    .bodyToMono(Void.class)
-                    .block();
-            
-            t.setEstado("PAGADO");
-        } catch (Exception e) {
-            t.setEstado("RECHAZADO");
+    public Ticket guardar(Ticket ticket) {
+        if (ticket.getBeneficios() != null) {
+            ticket.getBeneficios().forEach(b -> b.setTicket(ticket));
         }
+        return repo.save(ticket);
+    }
 
-        return repo.save(t);
+    public Ticket actualizar(Long id, Ticket datosNuevos) {
+        Ticket existente = obtenerPorId(id);
+        existente.setEventoId(datosNuevos.getEventoId());
+        existente.setPrecio(datosNuevos.getPrecio());
+        existente.setEstado(datosNuevos.getEstado());
+        existente.setUsername(datosNuevos.getUsername());
+        
+        existente.getBeneficios().clear();
+        if (datosNuevos.getBeneficios() != null) {
+            datosNuevos.getBeneficios().forEach(b -> {
+                b.setTicket(existente);
+                existente.getBeneficios().add(b);
+            });
+        }
+        
+        return repo.save(existente);
+    }
+
+    public void eliminar(Long id) {
+        if (!repo.existsById(id)) {
+            throw new EntityNotFoundException("Ticket no encontrado con id: " + id);
+        }
+        repo.deleteById(id);
     }
 }

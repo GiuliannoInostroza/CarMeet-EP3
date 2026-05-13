@@ -1,6 +1,13 @@
 CREATE TABLE evento (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY, 
-    nombre VARCHAR(100), 
-    fecha VARCHAR(50), 
-    ubicacion VARCHAR(100)
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    fecha VARCHAR(255) NOT NULL,
+    ubicacion VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE patrocinador (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    evento_id BIGINT,
+    nombre VARCHAR(255) NOT NULL,
+    FOREIGN KEY (evento_id) REFERENCES evento(id) ON DELETE CASCADE
 );

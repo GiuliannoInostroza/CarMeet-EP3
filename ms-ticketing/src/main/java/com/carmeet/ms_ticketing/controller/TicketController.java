@@ -79,6 +79,7 @@ public class TicketController {
             e.setBeneficios(dto.getBeneficios().stream().map(pdto -> {
                 Beneficio p = new Beneficio();
                 p.setDescripcion(pdto.getDescripcion());
+                p.setTicket(e);
                 return p;
             }).collect(Collectors.toList()));
         }

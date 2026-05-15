@@ -81,6 +81,7 @@ public class RecintoController {
             e.setZonas(dto.getZonas().stream().map(pdto -> {
                 Zona p = new Zona();
                 p.setNombre(pdto.getNombre());
+                p.setRecinto(e);
                 return p;
             }).collect(Collectors.toList()));
         }

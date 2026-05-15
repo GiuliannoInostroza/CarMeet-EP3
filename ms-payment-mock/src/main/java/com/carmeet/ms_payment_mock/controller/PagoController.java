@@ -75,6 +75,7 @@ public class PagoController {
             e.setLogs(dto.getLogs().stream().map(pdto -> {
                 TransaccionLog p = new TransaccionLog();
                 p.setEstado(pdto.getEstado());
+                p.setPago(e);
                 return p;
             }).collect(Collectors.toList()));
         }

@@ -77,6 +77,7 @@ public class VehiculoController {
             e.setMantenimientos(dto.getMantenimientos().stream().map(pdto -> {
                 Mantenimiento p = new Mantenimiento();
                 p.setDescripcion(pdto.getDescripcion());
+                p.setVehiculo(e);
                 return p;
             }).collect(Collectors.toList()));
         }

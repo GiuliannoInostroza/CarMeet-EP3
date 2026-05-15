@@ -77,6 +77,7 @@ public class EventoController {
             e.setPatrocinadores(dto.getPatrocinadores().stream().map(pdto -> {
                 Patrocinador p = new Patrocinador();
                 p.setNombre(pdto.getNombre());
+                p.setEvento(e);
                 return p;
             }).collect(Collectors.toList()));
         }

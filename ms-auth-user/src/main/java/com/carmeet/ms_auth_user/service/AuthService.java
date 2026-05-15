@@ -1,7 +1,7 @@
 package com.carmeet.ms_auth_user.service;
 
 import java.util.Date;
-import java.util.UUID;
+
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,12 +79,12 @@ public class AuthService {
 
     private String generarRefreshToken(String username) {
 
-        String token = UUID.randomUUID().toString();
+        String token = jwtUtil.generarRefreshToken(username);
 
         RefreshToken rt = new RefreshToken();
         rt.setToken(token);
         rt.setUsername(username);
-        rt.setExpiryDate(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24));
+        rt.setExpiryDate(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24));
 
         refreshRepo.save(rt);
 

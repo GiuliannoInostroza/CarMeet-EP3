@@ -77,6 +77,7 @@ public class InscripcionController {
             e.setRequisitos(dto.getRequisitos().stream().map(pdto -> {
                 Requisito p = new Requisito();
                 p.setDescripcion(pdto.getDescripcion());
+                p.setInscripcion(e);
                 return p;
             }).collect(Collectors.toList()));
         }

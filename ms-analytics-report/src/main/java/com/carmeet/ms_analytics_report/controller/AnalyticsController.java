@@ -80,6 +80,7 @@ public class AnalyticsController {
             e.setMetricas(dto.getMetricas().stream().map(pdto -> {
                 Metrica p = new Metrica();
                 p.setNombre(pdto.getNombre());
+                p.setReporte(e);
                 return p;
             }).collect(Collectors.toList()));
         }

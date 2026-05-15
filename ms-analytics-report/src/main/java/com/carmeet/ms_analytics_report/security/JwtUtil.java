@@ -21,6 +21,9 @@ public class JwtUtil {
     public boolean esValido(String token) {
         try {
             Claims claims = getClaims(token);
+            if ("refresh".equals(claims.get("type"))) {
+                return false;
+            }
             return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return false;

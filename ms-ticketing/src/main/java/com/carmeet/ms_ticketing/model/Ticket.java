@@ -14,6 +14,7 @@ public class Ticket {
     
     private Long eventoId;
     private Double precio;
+    private String categoria;
     private String estado;
     private String username;
 
@@ -21,3 +22,4 @@ public class Ticket {
     @Builder.Default
     private List<Beneficio> beneficios = new ArrayList<>();
 }
+

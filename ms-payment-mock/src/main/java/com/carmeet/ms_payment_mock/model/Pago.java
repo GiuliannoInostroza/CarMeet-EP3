@@ -14,8 +14,10 @@ public class Pago {
     
     private Long ticketId;
     private Double monto;
+    private String metodoPago;
 
     @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<TransaccionLog> logs = new ArrayList<>();
 }
+

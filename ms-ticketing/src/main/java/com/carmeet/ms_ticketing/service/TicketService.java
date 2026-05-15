@@ -33,6 +33,7 @@ public class TicketService {
         Ticket existente = obtenerPorId(id);
         existente.setEventoId(datosNuevos.getEventoId());
         existente.setPrecio(datosNuevos.getPrecio());
+        existente.setCategoria(datosNuevos.getCategoria());
         existente.setEstado(datosNuevos.getEstado());
         existente.setUsername(datosNuevos.getUsername());
         

@@ -32,6 +32,7 @@ public class InscripcionService {
     public Inscripcion actualizar(Long id, Inscripcion datosNuevos) {
         Inscripcion existente = obtenerPorId(id);
         existente.setVehiculoId(datosNuevos.getVehiculoId());
+        existente.setParticipante(datosNuevos.getParticipante());
         existente.setCategoria(datosNuevos.getCategoria());
         existente.setUsername(datosNuevos.getUsername());
         

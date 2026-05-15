@@ -60,6 +60,8 @@ public class NotificacionController {
             dto.setAdjuntos(e.getAdjuntos().stream().map(p -> {
                 AdjuntoDTO pdto = new AdjuntoDTO();
                 pdto.setId(p.getId());
+                pdto.setNombreArchivo(p.getNombreArchivo());
+                pdto.setUrl(p.getUrl());
                 pdto.setRutaArchivo(p.getRutaArchivo());
                 return pdto;
             }).collect(Collectors.toList()));
@@ -74,6 +76,8 @@ public class NotificacionController {
         if(dto.getAdjuntos() != null) {
             e.setAdjuntos(dto.getAdjuntos().stream().map(pdto -> {
                 Adjunto p = new Adjunto();
+                p.setNombreArchivo(pdto.getNombreArchivo());
+                p.setUrl(pdto.getUrl());
                 p.setRutaArchivo(pdto.getRutaArchivo());
                 p.setNotificacion(e);
                 return p;

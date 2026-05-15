@@ -2,7 +2,6 @@ package com.carmeet.ms_auth_user.service;
 
 import java.util.Date;
 
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +28,12 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
 
-    // ðŸ”¹ REGISTER
+    // REGISTER - asigna ROLE_USER por defecto
     public AuthResponse register(RegisterRequest req) {
+
+        if (usuarioRepo.findByUsername(req.getUsername()).isPresent()) {
+            throw new RuntimeException("El usuario '" + req.getUsername() + "' ya existe");
+        }
 
         Usuario user = new Usuario();
         user.setUsername(req.getUsername());
@@ -42,10 +45,10 @@ public class AuthService {
         String access = jwtUtil.generarToken(user.getUsername(), user.getRole());
         String refresh = generarRefreshToken(user.getUsername());
 
-        return new AuthResponse(access, refresh);
+        return new AuthResponse(access, refresh, user.getRole());
     }
 
-    // ðŸ”¹ LOGIN
+    // LOGIN
     public AuthResponse login(LoginRequest req) {
 
         authManager.authenticate(
@@ -57,24 +60,46 @@ public class AuthService {
         String access = jwtUtil.generarToken(user.getUsername(), user.getRole());
         String refresh = generarRefreshToken(user.getUsername());
 
-        return new AuthResponse(access, refresh);
+        return new AuthResponse(access, refresh, user.getRole());
     }
 
-    // ðŸ”¹ REFRESH
+    // REFRESH
     public AuthResponse refresh(String refreshToken) {
 
         RefreshToken token = refreshRepo.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Refresh invÃ¡lido"));
+                .orElseThrow(() -> new RuntimeException("Refresh inválido"));
 
         if (!jwtUtil.esValido(refreshToken) || !jwtUtil.esRefreshToken(refreshToken)) {
-            throw new RuntimeException("Refresh token invÃ¡lido");
+            throw new RuntimeException("Refresh token inválido");
         }
 
         Usuario user = usuarioRepo.findByUsername(token.getUsername()).get();
 
         String newAccess = jwtUtil.generarToken(user.getUsername(), user.getRole());
 
-        return new AuthResponse(newAccess, refreshToken);
+        return new AuthResponse(newAccess, refreshToken, user.getRole());
+    }
+
+    // PROMOVER A ADMIN
+    public Usuario promoverAAdmin(String username) {
+        Usuario user = usuarioRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+        user.setRole("ROLE_ADMIN");
+        return usuarioRepo.save(user);
+    }
+
+    // DEGRADAR A USER
+    public Usuario degradarAUser(String username) {
+        Usuario user = usuarioRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+        user.setRole("ROLE_USER");
+        return usuarioRepo.save(user);
+    }
+
+    // OBTENER USUARIO POR USERNAME
+    public Usuario obtenerPorUsername(String username) {
+        return usuarioRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
     }
 
     private String generarRefreshToken(String username) {

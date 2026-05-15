@@ -3,22 +3,22 @@ package com.carmeet.ms_competition_reg.dto;
 import lombok.Data;
 import java.util.List;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.Valid;
 
 @Data
 public class InscripcionDTO {
     private Long id;
 
-    @NotNull(message = "El vehiculoId es obligatorio")
-    private Long vehiculoId;
+    private Long vehiculoId;  // Opcional en creación
 
     @NotBlank(message = "La categoria es obligatoria")
     private String categoria;
 
-    @NotBlank(message = "El username es obligatorio")
-    private String username;
+    private String participante;  // Nombre del participante
+
+    private String username;  // Opcional en creación
 
     @Valid
     private List<RequisitoDTO> requisitos;
 }
+

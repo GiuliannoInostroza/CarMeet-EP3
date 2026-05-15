@@ -1,0 +1,5 @@
+ALTER TABLE inscripcion ADD COLUMN participante VARCHAR(255);
+ALTER TABLE inscripcion MODIFY COLUMN vehiculo_id BIGINT NULL;
+ALTER TABLE inscripcion MODIFY COLUMN username VARCHAR(255) NULL;
+ALTER TABLE requisito ADD COLUMN nombre VARCHAR(255);
+

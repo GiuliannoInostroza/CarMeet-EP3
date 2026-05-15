@@ -16,12 +16,13 @@ public class TicketDTO {
     @NotNull(message = "El precio es obligatorio")
     private Double precio;
 
-    @NotBlank(message = "El estado es obligatorio")
-    private String estado;
+    @NotBlank(message = "La categoria es obligatoria")
+    private String categoria;
 
-    @NotBlank(message = "El username es obligatorio")
-    private String username;
+    private String estado;    // Se puede asignar un default en el servicio
+    private String username;  // Opcional en creación
 
     @Valid
     private List<BeneficioDTO> beneficios;
 }
+

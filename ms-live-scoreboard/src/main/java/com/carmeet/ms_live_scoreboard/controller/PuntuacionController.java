@@ -60,6 +60,8 @@ public class PuntuacionController {
             dto.setDetalles(e.getDetalles().stream().map(p -> {
                 DetallePuntuacionDTO pdto = new DetallePuntuacionDTO();
                 pdto.setId(p.getId());
+                pdto.setCategoria(p.getCategoria());
+                pdto.setPuntosAsignados(p.getPuntosAsignados());
                 pdto.setDescripcion(p.getDescripcion());
                 return pdto;
             }).collect(Collectors.toList()));
@@ -74,6 +76,8 @@ public class PuntuacionController {
         if(dto.getDetalles() != null) {
             e.setDetalles(dto.getDetalles().stream().map(pdto -> {
                 DetallePuntuacion p = new DetallePuntuacion();
+                p.setCategoria(pdto.getCategoria());
+                p.setPuntosAsignados(pdto.getPuntosAsignados());
                 p.setDescripcion(pdto.getDescripcion());
                 p.setPuntuacion(e);
                 return p;

@@ -10,3 +10,4 @@ CREATE TABLE metrica (
     nombre VARCHAR(255) NOT NULL,
     FOREIGN KEY (reporte_id) REFERENCES reporte(id) ON DELETE CASCADE
 );
+

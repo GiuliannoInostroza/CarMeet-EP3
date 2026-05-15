@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/analytics")
+@RequestMapping("/api/reportes")
 @RequiredArgsConstructor
 public class AnalyticsController {
 
@@ -66,6 +66,7 @@ public class AnalyticsController {
                 MetricaDTO pdto = new MetricaDTO();
                 pdto.setId(p.getId());
                 pdto.setNombre(p.getNombre());
+                pdto.setValor(p.getValor());
                 return pdto;
             }).collect(Collectors.toList()));
         }
@@ -80,6 +81,7 @@ public class AnalyticsController {
             e.setMetricas(dto.getMetricas().stream().map(pdto -> {
                 Metrica p = new Metrica();
                 p.setNombre(pdto.getNombre());
+                p.setValor(pdto.getValor());
                 p.setReporte(e);
                 return p;
             }).collect(Collectors.toList()));

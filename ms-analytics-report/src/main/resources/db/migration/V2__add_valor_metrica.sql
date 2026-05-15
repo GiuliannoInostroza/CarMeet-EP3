@@ -1,0 +1,1 @@
+ALTER TABLE metrica ADD COLUMN valor DOUBLE;

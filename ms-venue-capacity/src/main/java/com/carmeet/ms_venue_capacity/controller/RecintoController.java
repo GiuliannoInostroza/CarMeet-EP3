@@ -60,7 +60,9 @@ public class RecintoController {
     private RecintoDTO toDTO(Recinto e) {
         RecintoDTO dto = new RecintoDTO();
         dto.setId(e.getId());
+        dto.setNombre(e.getNombre());
         dto.setCapacidadMaxima(e.getCapacidadMaxima());
+        dto.setCapacidad(e.getCapacidadMaxima());
         dto.setOcupacionActual(e.getOcupacionActual());
         if(e.getZonas() != null) {
             dto.setZonas(e.getZonas().stream().map(p -> {
@@ -75,8 +77,11 @@ public class RecintoController {
 
     private Recinto toEntity(RecintoDTO dto) {
         Recinto e = new Recinto();
-        e.setCapacidadMaxima(dto.getCapacidadMaxima());
-        e.setOcupacionActual(dto.getOcupacionActual());
+        e.setNombre(dto.getNombre());
+        // Soporta tanto 'capacidad' (alias) como 'capacidadMaxima'
+        Integer cap = dto.getCapacidadMaxima() != null ? dto.getCapacidadMaxima() : dto.getCapacidad();
+        e.setCapacidadMaxima(cap);
+        e.setOcupacionActual(dto.getOcupacionActual() != null ? dto.getOcupacionActual() : 0);
         if(dto.getZonas() != null) {
             e.setZonas(dto.getZonas().stream().map(pdto -> {
                 Zona p = new Zona();

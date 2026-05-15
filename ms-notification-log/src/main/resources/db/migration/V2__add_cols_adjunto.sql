@@ -1,0 +1,2 @@
+ALTER TABLE adjunto ADD COLUMN nombre_archivo VARCHAR(255);
+ALTER TABLE adjunto ADD COLUMN url VARCHAR(500);

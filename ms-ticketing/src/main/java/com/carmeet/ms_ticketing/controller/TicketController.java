@@ -56,12 +56,14 @@ public class TicketController {
         dto.setId(e.getId());
         dto.setEventoId(e.getEventoId());
         dto.setPrecio(e.getPrecio());
+        dto.setCategoria(e.getCategoria());
         dto.setEstado(e.getEstado());
         dto.setUsername(e.getUsername());
         if(e.getBeneficios() != null) {
             dto.setBeneficios(e.getBeneficios().stream().map(p -> {
                 BeneficioDTO pdto = new BeneficioDTO();
                 pdto.setId(p.getId());
+                pdto.setNombre(p.getNombre());
                 pdto.setDescripcion(p.getDescripcion());
                 return pdto;
             }).collect(Collectors.toList()));
@@ -73,11 +75,13 @@ public class TicketController {
         Ticket e = new Ticket();
         e.setEventoId(dto.getEventoId());
         e.setPrecio(dto.getPrecio());
-        e.setEstado(dto.getEstado());
+        e.setCategoria(dto.getCategoria());
+        e.setEstado(dto.getEstado() != null ? dto.getEstado() : "PENDIENTE");
         e.setUsername(dto.getUsername());
         if(dto.getBeneficios() != null) {
             e.setBeneficios(dto.getBeneficios().stream().map(pdto -> {
                 Beneficio p = new Beneficio();
+                p.setNombre(pdto.getNombre());
                 p.setDescripcion(pdto.getDescripcion());
                 p.setTicket(e);
                 return p;

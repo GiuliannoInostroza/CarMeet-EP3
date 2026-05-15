@@ -13,6 +13,7 @@ public class Inscripcion {
     private Long id;
     
     private Long vehiculoId;
+    private String participante;
     private String categoria;
     private String username;
 
@@ -20,3 +21,4 @@ public class Inscripcion {
     @Builder.Default
     private List<Requisito> requisitos = new ArrayList<>();
 }
+

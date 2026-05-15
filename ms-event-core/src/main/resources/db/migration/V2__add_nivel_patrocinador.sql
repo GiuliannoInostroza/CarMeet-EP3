@@ -1,0 +1,1 @@
+ALTER TABLE patrocinador ADD COLUMN nivel VARCHAR(50);

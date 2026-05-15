@@ -11,7 +11,8 @@ import java.util.ArrayList;
 public class Recinto {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    private String nombre;
     private Integer capacidadMaxima;
     private Integer ocupacionActual;
 

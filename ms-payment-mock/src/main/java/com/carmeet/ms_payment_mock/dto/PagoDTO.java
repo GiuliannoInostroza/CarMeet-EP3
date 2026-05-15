@@ -9,12 +9,14 @@ import jakarta.validation.Valid;
 public class PagoDTO {
     private Long id;
 
-    @NotNull(message = "El ticketId es obligatorio")
-    private Long ticketId;
+    private Long ticketId;  // Opcional en modo mock
 
     @NotNull(message = "El monto es obligatorio")
     private Double monto;
 
+    private String metodoPago;
+
     @Valid
     private List<TransaccionLogDTO> logs;
 }
+

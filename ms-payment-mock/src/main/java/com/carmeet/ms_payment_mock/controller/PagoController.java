@@ -56,6 +56,7 @@ public class PagoController {
         dto.setId(e.getId());
         dto.setTicketId(e.getTicketId());
         dto.setMonto(e.getMonto());
+        dto.setMetodoPago(e.getMetodoPago());
         if(e.getLogs() != null) {
             dto.setLogs(e.getLogs().stream().map(p -> {
                 TransaccionLogDTO pdto = new TransaccionLogDTO();
@@ -71,10 +72,12 @@ public class PagoController {
         Pago e = new Pago();
         e.setTicketId(dto.getTicketId());
         e.setMonto(dto.getMonto());
+        e.setMetodoPago(dto.getMetodoPago());
         if(dto.getLogs() != null) {
             e.setLogs(dto.getLogs().stream().map(pdto -> {
                 TransaccionLog p = new TransaccionLog();
                 p.setEstado(pdto.getEstado());
+                p.setFecha(java.time.LocalDateTime.now());
                 p.setPago(e);
                 return p;
             }).collect(Collectors.toList()));

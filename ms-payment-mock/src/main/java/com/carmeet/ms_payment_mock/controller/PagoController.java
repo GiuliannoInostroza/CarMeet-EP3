@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/pagos")
+@RequestMapping("/api/v1/pagos")
 @RequiredArgsConstructor
 public class PagoController {
 
     private final PagoService service;
+
+    // ── CRUD ──────────────────────────────────────────────────────────────────
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PagoDTO>>> listar() {
@@ -51,13 +53,47 @@ public class PagoController {
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Eliminado").build());
     }
 
+    // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
+
+    /** Obtiene el pago asociado a un ticket */
+    @GetMapping("/ticket/{ticketId}")
+    public ResponseEntity<ApiResponse<PagoDTO>> obtenerPorTicket(@PathVariable Long ticketId) {
+        PagoDTO dto = toDTO(service.obtenerPorTicketId(ticketId));
+        return ResponseEntity.ok(ApiResponse.<PagoDTO>builder()
+                .success(true).message("Pago del ticket " + ticketId).data(dto).build());
+    }
+
+    /** Procesa un pago mock: simula aprobación o rechazo */
+    @PostMapping("/procesar")
+    public ResponseEntity<ApiResponse<PagoDTO>> procesarPago(@Valid @RequestBody PagoDTO dto) {
+        Pago resultado = service.procesarPago(toEntity(dto));
+        return ResponseEntity.ok(ApiResponse.<PagoDTO>builder()
+                .success(true).message("Pago procesado").data(toDTO(resultado)).build());
+    }
+
+    /** Lista los logs de transacción de un pago */
+    @GetMapping("/{id}/logs")
+    public ResponseEntity<ApiResponse<List<TransaccionLogDTO>>> obtenerLogs(@PathVariable Long id) {
+        List<TransaccionLogDTO> logs = service.obtenerLogs(id).stream()
+                .map(l -> {
+                    TransaccionLogDTO dto2 = new TransaccionLogDTO();
+                    dto2.setId(l.getId());
+                    dto2.setEstado(l.getEstado());
+                    return dto2;
+                }).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<TransaccionLogDTO>>builder()
+                .success(true).message("Logs del pago " + id).data(logs).build());
+    }
+
+    // ── CONVERSIÓN ────────────────────────────────────────────────────────────
+
     private PagoDTO toDTO(Pago e) {
         PagoDTO dto = new PagoDTO();
         dto.setId(e.getId());
         dto.setTicketId(e.getTicketId());
         dto.setMonto(e.getMonto());
         dto.setMetodoPago(e.getMetodoPago());
-        if(e.getLogs() != null) {
+        if (e.getLogs() != null) {
             dto.setLogs(e.getLogs().stream().map(p -> {
                 TransaccionLogDTO pdto = new TransaccionLogDTO();
                 pdto.setId(p.getId());
@@ -73,7 +109,7 @@ public class PagoController {
         e.setTicketId(dto.getTicketId());
         e.setMonto(dto.getMonto());
         e.setMetodoPago(dto.getMetodoPago());
-        if(dto.getLogs() != null) {
+        if (dto.getLogs() != null) {
             e.setLogs(dto.getLogs().stream().map(pdto -> {
                 TransaccionLog p = new TransaccionLog();
                 p.setEstado(pdto.getEstado());

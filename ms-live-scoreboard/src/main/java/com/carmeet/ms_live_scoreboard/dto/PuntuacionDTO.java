@@ -15,6 +15,8 @@ public class PuntuacionDTO {
     @NotNull(message = "Los puntos son obligatorios")
     private Integer puntos;
 
+    private Long eventoId;  // ← NUEVO: referencia al evento (opcional)
+
     @Valid
     private List<DetallePuntuacionDTO> detalles;
 }

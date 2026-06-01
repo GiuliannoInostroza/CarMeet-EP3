@@ -1,6 +1,7 @@
 package com.carmeet.ms_auth_user.service;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -100,6 +101,11 @@ public class AuthService {
     public Usuario obtenerPorUsername(String username) {
         return usuarioRepo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+    }
+
+    // LISTAR TODOS LOS USUARIOS (solo ADMIN)
+    public List<Usuario> listarUsuarios() {
+        return usuarioRepo.findAll();
     }
 
     private String generarRefreshToken(String username) {

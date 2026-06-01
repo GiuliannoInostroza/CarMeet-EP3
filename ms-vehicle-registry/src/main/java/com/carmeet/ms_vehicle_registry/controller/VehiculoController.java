@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/vehiculos")
+@RequestMapping("/api/v1/vehiculos")
 @RequiredArgsConstructor
 public class VehiculoController {
 
     private final VehiculoService service;
+
+    // ── CRUD ──────────────────────────────────────────────────────────────────
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<VehiculoDTO>>> listar() {
@@ -51,13 +53,53 @@ public class VehiculoController {
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Eliminado").build());
     }
 
+    // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
+
+    /** Historial de mantenimientos de un vehículo */
+    @GetMapping("/{id}/mantenimientos")
+    public ResponseEntity<ApiResponse<List<MantenimientoDTO>>> listarMantenimientos(@PathVariable Long id) {
+        List<MantenimientoDTO> lista = service.listarMantenimientos(id).stream()
+                .map(m -> {
+                    MantenimientoDTO dto = new MantenimientoDTO();
+                    dto.setId(m.getId());
+                    dto.setDescripcion(m.getDescripcion());
+                    return dto;
+                }).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<MantenimientoDTO>>builder()
+                .success(true).message("Historial de mantenimientos").data(lista).build());
+    }
+
+    /**
+     * Agrega un mantenimiento al vehículo sin reemplazar el historial existente.
+     */
+    @PostMapping("/{id}/mantenimientos")
+    public ResponseEntity<ApiResponse<VehiculoDTO>> agregarMantenimiento(
+            @PathVariable Long id, @Valid @RequestBody MantenimientoDTO dto) {
+        Mantenimiento m = new Mantenimiento();
+        m.setDescripcion(dto.getDescripcion());
+        Vehiculo actualizado = service.agregarMantenimiento(id, m);
+        return ResponseEntity.status(201).body(ApiResponse.<VehiculoDTO>builder()
+                .success(true).message("Mantenimiento agregado").data(toDTO(actualizado)).build());
+    }
+
+    /** Búsqueda de vehículos por modelo */
+    @GetMapping("/buscar")
+    public ResponseEntity<ApiResponse<List<VehiculoDTO>>> buscarPorModelo(@RequestParam String modelo) {
+        List<VehiculoDTO> lista = service.buscarPorModelo(modelo).stream()
+                .map(this::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<VehiculoDTO>>builder()
+                .success(true).message("Resultados para: " + modelo).data(lista).build());
+    }
+
+    // ── CONVERSIÓN ────────────────────────────────────────────────────────────
+
     private VehiculoDTO toDTO(Vehiculo e) {
         VehiculoDTO dto = new VehiculoDTO();
         dto.setId(e.getId());
         dto.setMarca(e.getMarca());
         dto.setModelo(e.getModelo());
         dto.setAnio(e.getAnio());
-        if(e.getMantenimientos() != null) {
+        if (e.getMantenimientos() != null) {
             dto.setMantenimientos(e.getMantenimientos().stream().map(p -> {
                 MantenimientoDTO pdto = new MantenimientoDTO();
                 pdto.setId(p.getId());
@@ -73,7 +115,7 @@ public class VehiculoController {
         e.setMarca(dto.getMarca());
         e.setModelo(dto.getModelo());
         e.setAnio(dto.getAnio());
-        if(dto.getMantenimientos() != null) {
+        if (dto.getMantenimientos() != null) {
             e.setMantenimientos(dto.getMantenimientos().stream().map(pdto -> {
                 Mantenimiento p = new Mantenimiento();
                 p.setDescripcion(pdto.getDescripcion());

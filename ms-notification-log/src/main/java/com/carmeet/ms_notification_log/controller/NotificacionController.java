@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/notificaciones")
+@RequestMapping("/api/v1/notificaciones")
 @RequiredArgsConstructor
 public class NotificacionController {
 
     private final NotificacionService service;
+
+    // ── CRUD ──────────────────────────────────────────────────────────────────
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<NotificacionDTO>>> listar() {
@@ -51,12 +53,42 @@ public class NotificacionController {
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Eliminado").build());
     }
 
+    // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
+
+    /** Lista notificaciones de un destinatario (usuario) */
+    @GetMapping("/destinatario/{username}")
+    public ResponseEntity<ApiResponse<List<NotificacionDTO>>> obtenerPorDestinatario(@PathVariable String username) {
+        List<NotificacionDTO> lista = service.obtenerPorDestinatario(username)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<NotificacionDTO>>builder()
+                .success(true).message("Notificaciones de: " + username).data(lista).build());
+    }
+
+    /** Envía una notificación — usado por otros microservicios */
+    @PostMapping("/enviar")
+    public ResponseEntity<ApiResponse<NotificacionDTO>> enviar(@Valid @RequestBody NotificacionDTO dto) {
+        Notificacion enviada = service.enviar(toEntity(dto));
+        return ResponseEntity.status(201).body(ApiResponse.<NotificacionDTO>builder()
+                .success(true).message("Notificación enviada").data(toDTO(enviada)).build());
+    }
+
+    /** Marca una notificación como leída */
+    @PatchMapping("/{id}/marcar-leida")
+    public ResponseEntity<ApiResponse<NotificacionDTO>> marcarLeida(@PathVariable Long id) {
+        NotificacionDTO dto = toDTO(service.marcarLeida(id));
+        return ResponseEntity.ok(ApiResponse.<NotificacionDTO>builder()
+                .success(true).message("Notificación marcada como leída").data(dto).build());
+    }
+
+    // ── CONVERSIÓN ────────────────────────────────────────────────────────────
+
     private NotificacionDTO toDTO(Notificacion e) {
         NotificacionDTO dto = new NotificacionDTO();
         dto.setId(e.getId());
         dto.setDestinatario(e.getDestinatario());
         dto.setMensaje(e.getMensaje());
-        if(e.getAdjuntos() != null) {
+        dto.setLeida(e.getLeida());
+        if (e.getAdjuntos() != null) {
             dto.setAdjuntos(e.getAdjuntos().stream().map(p -> {
                 AdjuntoDTO pdto = new AdjuntoDTO();
                 pdto.setId(p.getId());
@@ -73,7 +105,8 @@ public class NotificacionController {
         Notificacion e = new Notificacion();
         e.setDestinatario(dto.getDestinatario());
         e.setMensaje(dto.getMensaje());
-        if(dto.getAdjuntos() != null) {
+        e.setLeida(dto.getLeida() != null ? dto.getLeida() : false);
+        if (dto.getAdjuntos() != null) {
             e.setAdjuntos(dto.getAdjuntos().stream().map(pdto -> {
                 Adjunto p = new Adjunto();
                 p.setNombreArchivo(pdto.getNombreArchivo());

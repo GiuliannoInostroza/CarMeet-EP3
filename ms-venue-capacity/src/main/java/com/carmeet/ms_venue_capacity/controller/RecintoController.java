@@ -12,14 +12,17 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/recintos")
+@RequestMapping("/api/v1/recintos")
 @RequiredArgsConstructor
 public class RecintoController {
 
     private final RecintoService service;
+
+    // ── CRUD ──────────────────────────────────────────────────────────────────
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<RecintoDTO>>> listar() {
@@ -51,11 +54,47 @@ public class RecintoController {
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Eliminado").build());
     }
 
-    @PostMapping("/{id}/ingreso")
+    // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
+
+    /** Lista las zonas de un recinto */
+    @GetMapping("/{id}/zonas")
+    public ResponseEntity<ApiResponse<List<ZonaDTO>>> listarZonas(@PathVariable Long id) {
+        List<ZonaDTO> zonas = service.listarZonas(id).stream()
+                .map(z -> {
+                    ZonaDTO dto = new ZonaDTO();
+                    dto.setId(z.getId());
+                    dto.setNombre(z.getNombre());
+                    return dto;
+                }).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<ZonaDTO>>builder()
+                .success(true).message("Zonas del recinto " + id).data(zonas).build());
+    }
+
+    /** Consulta disponibilidad del recinto */
+    @GetMapping("/{id}/disponibilidad")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> consultarDisponibilidad(@PathVariable Long id) {
+        Map<String, Object> info = service.consultarDisponibilidad(id);
+        return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+                .success(true).message("Disponibilidad del recinto").data(info).build());
+    }
+
+    /** Registra ingreso de una persona al recinto */
+    @PostMapping("/{id}/registrar-ingreso")
     public ResponseEntity<ApiResponse<RecintoDTO>> registrarIngreso(@PathVariable Long id) {
         Recinto actualizado = service.registrarIngreso(id);
-        return ResponseEntity.ok(ApiResponse.<RecintoDTO>builder().success(true).message("Ingreso registrado").data(toDTO(actualizado)).build());
+        return ResponseEntity.ok(ApiResponse.<RecintoDTO>builder()
+                .success(true).message("Ingreso registrado").data(toDTO(actualizado)).build());
     }
+
+    /** Registra egreso de una persona del recinto */
+    @PostMapping("/{id}/registrar-egreso")
+    public ResponseEntity<ApiResponse<RecintoDTO>> registrarEgreso(@PathVariable Long id) {
+        Recinto actualizado = service.registrarEgreso(id);
+        return ResponseEntity.ok(ApiResponse.<RecintoDTO>builder()
+                .success(true).message("Egreso registrado").data(toDTO(actualizado)).build());
+    }
+
+    // ── CONVERSIÓN ────────────────────────────────────────────────────────────
 
     private RecintoDTO toDTO(Recinto e) {
         RecintoDTO dto = new RecintoDTO();
@@ -64,7 +103,7 @@ public class RecintoController {
         dto.setCapacidadMaxima(e.getCapacidadMaxima());
         dto.setCapacidad(e.getCapacidadMaxima());
         dto.setOcupacionActual(e.getOcupacionActual());
-        if(e.getZonas() != null) {
+        if (e.getZonas() != null) {
             dto.setZonas(e.getZonas().stream().map(p -> {
                 ZonaDTO pdto = new ZonaDTO();
                 pdto.setId(p.getId());
@@ -82,7 +121,7 @@ public class RecintoController {
         Integer cap = dto.getCapacidadMaxima() != null ? dto.getCapacidadMaxima() : dto.getCapacidad();
         e.setCapacidadMaxima(cap);
         e.setOcupacionActual(dto.getOcupacionActual() != null ? dto.getOcupacionActual() : 0);
-        if(dto.getZonas() != null) {
+        if (dto.getZonas() != null) {
             e.setZonas(dto.getZonas().stream().map(pdto -> {
                 Zona p = new Zona();
                 p.setNombre(pdto.getNombre());

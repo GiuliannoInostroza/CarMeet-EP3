@@ -6,6 +6,7 @@ import com.carmeet.ms_live_scoreboard.model.DetallePuntuacion;
 import com.carmeet.ms_live_scoreboard.dto.PuntuacionDTO;
 import com.carmeet.ms_live_scoreboard.dto.DetallePuntuacionDTO;
 import com.carmeet.ms_live_scoreboard.service.PuntuacionService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +16,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/puntuaciones")
+@RequestMapping("/api/v1/puntuaciones")
 @RequiredArgsConstructor
 public class PuntuacionController {
 
     private final PuntuacionService service;
+
+    // ── CRUD ──────────────────────────────────────────────────────────────────
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PuntuacionDTO>>> listar() {
@@ -34,9 +37,13 @@ public class PuntuacionController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PuntuacionDTO>> guardar(@Valid @RequestBody PuntuacionDTO dto) {
-        Puntuacion nuevo = service.guardar(toEntity(dto));
-        return ResponseEntity.status(201).body(ApiResponse.<PuntuacionDTO>builder().success(true).message("Creado").data(toDTO(nuevo)).build());
+    public ResponseEntity<ApiResponse<PuntuacionDTO>> guardar(
+            @Valid @RequestBody PuntuacionDTO dto,
+            HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        Puntuacion nuevo = service.guardar(toEntity(dto), bearer);
+        return ResponseEntity.status(201).body(ApiResponse.<PuntuacionDTO>builder()
+                .success(true).message("Puntuación registrada").data(toDTO(nuevo)).build());
     }
 
     @PutMapping("/{id}")
@@ -51,12 +58,44 @@ public class PuntuacionController {
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Eliminado").build());
     }
 
+    // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
+
+    /** Ranking de puntuaciones de un evento (ordenado por puntos desc) */
+    @GetMapping("/evento/{eventoId}")
+    public ResponseEntity<ApiResponse<List<PuntuacionDTO>>> rankingEvento(@PathVariable Long eventoId) {
+        List<PuntuacionDTO> lista = service.rankingPorEvento(eventoId).stream()
+                .map(this::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<PuntuacionDTO>>builder()
+                .success(true).message("Ranking del evento " + eventoId).data(lista).build());
+    }
+
+    /** Puntuaciones de una inscripción */
+    @GetMapping("/inscripcion/{inscripcionId}")
+    public ResponseEntity<ApiResponse<List<PuntuacionDTO>>> porInscripcion(@PathVariable Long inscripcionId) {
+        List<PuntuacionDTO> lista = service.porInscripcion(inscripcionId).stream()
+                .map(this::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<PuntuacionDTO>>builder()
+                .success(true).message("Puntuaciones de inscripción " + inscripcionId).data(lista).build());
+    }
+
+    /** Top 10 puntuaciones globales */
+    @GetMapping("/ranking")
+    public ResponseEntity<ApiResponse<List<PuntuacionDTO>>> top10() {
+        List<PuntuacionDTO> lista = service.top10Global().stream()
+                .map(this::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<PuntuacionDTO>>builder()
+                .success(true).message("Top 10 puntuaciones globales").data(lista).build());
+    }
+
+    // ── CONVERSIÓN ────────────────────────────────────────────────────────────
+
     private PuntuacionDTO toDTO(Puntuacion e) {
         PuntuacionDTO dto = new PuntuacionDTO();
         dto.setId(e.getId());
         dto.setInscripcionId(e.getInscripcionId());
+        dto.setEventoId(e.getEventoId());
         dto.setPuntos(e.getPuntos());
-        if(e.getDetalles() != null) {
+        if (e.getDetalles() != null) {
             dto.setDetalles(e.getDetalles().stream().map(p -> {
                 DetallePuntuacionDTO pdto = new DetallePuntuacionDTO();
                 pdto.setId(p.getId());
@@ -72,8 +111,9 @@ public class PuntuacionController {
     private Puntuacion toEntity(PuntuacionDTO dto) {
         Puntuacion e = new Puntuacion();
         e.setInscripcionId(dto.getInscripcionId());
+        e.setEventoId(dto.getEventoId());
         e.setPuntos(dto.getPuntos());
-        if(dto.getDetalles() != null) {
+        if (dto.getDetalles() != null) {
             e.setDetalles(dto.getDetalles().stream().map(pdto -> {
                 DetallePuntuacion p = new DetallePuntuacion();
                 p.setCategoria(pdto.getCategoria());

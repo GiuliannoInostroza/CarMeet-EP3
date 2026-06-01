@@ -98,6 +98,12 @@
 			<version>2.8.17</version>
 		</dependency>
 
+		<!-- WebClient para comunicación inter-servicio -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

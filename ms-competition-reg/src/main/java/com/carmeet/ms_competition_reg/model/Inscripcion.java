@@ -13,12 +13,16 @@ public class Inscripcion {
     private Long id;
     
     private Long vehiculoId;
+    private Long eventoId;           // ← NUEVO: referencia al evento
     private String participante;
     private String categoria;
     private String username;
+
+    @Column(name = "estado", nullable = false)
+    @Builder.Default
+    private String estado = "PENDIENTE";  // ← NUEVO: PENDIENTE | APROBADA | RECHAZADA
 
     @OneToMany(mappedBy = "inscripcion", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Requisito> requisitos = new ArrayList<>();
 }
-

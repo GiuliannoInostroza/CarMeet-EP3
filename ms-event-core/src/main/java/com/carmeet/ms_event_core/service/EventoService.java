@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -34,7 +35,7 @@ public class EventoService {
         eventoExistente.setNombre(datosNuevos.getNombre());
         eventoExistente.setFecha(datosNuevos.getFecha());
         eventoExistente.setUbicacion(datosNuevos.getUbicacion());
-        
+
         eventoExistente.getPatrocinadores().clear();
         if (datosNuevos.getPatrocinadores() != null) {
             datosNuevos.getPatrocinadores().forEach(p -> {
@@ -42,7 +43,7 @@ public class EventoService {
                 eventoExistente.getPatrocinadores().add(p);
             });
         }
-        
+
         return repo.save(eventoExistente);
     }
 
@@ -51,5 +52,19 @@ public class EventoService {
             throw new EntityNotFoundException("Evento no encontrado con id: " + id);
         }
         repo.deleteById(id);
+    }
+
+    /** Retorna los eventos cuya fecha es >= hoy (formato yyyy-MM-dd) */
+    public List<Evento> listarProximos() {
+        String hoy = LocalDate.now().toString();
+        return repo.findEventosProximos(hoy);
+    }
+
+    /** Búsqueda de eventos por nombre (case-insensitive) */
+    public List<Evento> buscarPorNombre(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new RuntimeException("El parámetro 'nombre' no puede estar vacío");
+        }
+        return repo.findByNombreContainingIgnoreCase(nombre);
     }
 }

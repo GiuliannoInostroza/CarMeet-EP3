@@ -1,4 +1,4 @@
-package com.carmeet.ms_analytics_report.config;
+package com.carmeet.ms_live_scoreboard.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

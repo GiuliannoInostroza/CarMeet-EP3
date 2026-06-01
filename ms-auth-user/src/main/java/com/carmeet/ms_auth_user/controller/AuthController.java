@@ -13,20 +13,24 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
 
     private final AuthService service;
 
-    // POST /auth/register  (publico)
+    // ── ENDPOINTS PÚBLICOS ────────────────────────────────────────────────────
+
+    /** POST /api/v1/auth/register — Registro de nuevos usuarios (público) */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest req) {
-        log.info("POST /auth/register - usuario: {}", req.getUsername());
+        log.info("POST /api/v1/auth/register - usuario: {}", req.getUsername());
 
         AuthResponse res = service.register(req);
 
@@ -39,10 +43,10 @@ public class AuthController {
         );
     }
 
-    // POST /auth/login  (publico)
+    /** POST /api/v1/auth/login — Login (público) */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest req) {
-        log.info("POST /auth/login - usuario: {}", req.getUsername());
+        log.info("POST /api/v1/auth/login - usuario: {}", req.getUsername());
 
         AuthResponse res = service.login(req);
 
@@ -55,7 +59,7 @@ public class AuthController {
         );
     }
 
-    // POST /auth/refresh  (publico)
+    /** POST /api/v1/auth/refresh — Renovar access token (público) */
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(@RequestBody RefreshRequest req) {
 
@@ -70,7 +74,9 @@ public class AuthController {
         );
     }
 
-    // GET /auth/me  (requiere token JWT cualquier rol)
+    // ── ENDPOINTS AUTENTICADOS ────────────────────────────────────────────────
+
+    /** GET /api/v1/auth/me — Datos del usuario autenticado */
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Map<String, String>>> me(Authentication auth) {
 
@@ -91,7 +97,9 @@ public class AuthController {
         );
     }
 
-    // PUT /auth/promote/{username}  (solo ROLE_ADMIN puede promover)
+    // ── ENDPOINTS ADMIN ───────────────────────────────────────────────────────
+
+    /** PUT /api/v1/auth/promote/{username} — Solo ADMIN: promover a admin */
     @PutMapping("/promote/{username}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> promote(@PathVariable String username) {
@@ -112,7 +120,7 @@ public class AuthController {
         );
     }
 
-    // PUT /auth/demote/{username}  (solo ROLE_ADMIN puede degradar)
+    /** PUT /api/v1/auth/demote/{username} — Solo ADMIN: degradar a user */
     @PutMapping("/demote/{username}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> demote(@PathVariable String username) {
@@ -128,6 +136,42 @@ public class AuthController {
                 ApiResponse.<Map<String, String>>builder()
                         .success(true)
                         .message("Usuario degradado a USER exitosamente")
+                        .data(info)
+                        .build()
+        );
+    }
+
+    /** GET /api/v1/auth/usuarios — Solo ADMIN: lista todos los usuarios */
+    @GetMapping("/usuarios")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> listarUsuarios() {
+        List<Map<String, String>> lista = service.listarUsuarios().stream()
+                .map(u -> Map.of("username", u.getUsername(), "role", u.getRole()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<Map<String, String>>>builder()
+                        .success(true)
+                        .message("Lista de usuarios")
+                        .data(lista)
+                        .build()
+        );
+    }
+
+    /** GET /api/v1/auth/usuarios/{username} — Obtener usuario por username */
+    @GetMapping("/usuarios/{username}")
+    public ResponseEntity<ApiResponse<Map<String, String>>> obtenerUsuario(@PathVariable String username) {
+        Usuario user = service.obtenerPorUsername(username);
+
+        Map<String, String> info = Map.of(
+                "username", user.getUsername(),
+                "role", user.getRole()
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<Map<String, String>>builder()
+                        .success(true)
+                        .message("Usuario encontrado")
                         .data(info)
                         .build()
         );

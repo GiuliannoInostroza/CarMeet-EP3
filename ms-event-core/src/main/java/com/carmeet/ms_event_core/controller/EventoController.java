@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/eventos")
+@RequestMapping("/api/v1/eventos")
 @RequiredArgsConstructor
 public class EventoController {
 
     private final EventoService service;
+
+    // ── CRUD ──────────────────────────────────────────────────────────────────
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<EventoDTO>>> listar() {
@@ -51,17 +53,54 @@ public class EventoController {
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Eliminado").build());
     }
 
+    // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
+
+    /** Lista los patrocinadores de un evento */
+    @GetMapping("/{id}/patrocinadores")
+    public ResponseEntity<ApiResponse<List<PatrocinadorDTO>>> listarPatrocinadores(@PathVariable Long id) {
+        Evento evento = service.obtenerPorId(id);
+        List<PatrocinadorDTO> lista = evento.getPatrocinadores().stream()
+                .map(p -> {
+                    PatrocinadorDTO dto = new PatrocinadorDTO();
+                    dto.setId(p.getId());
+                    dto.setNombre(p.getNombre());
+                    dto.setNivel(p.getNivel());
+                    return dto;
+                }).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<PatrocinadorDTO>>builder()
+                .success(true).message("Patrocinadores del evento " + id).data(lista).build());
+    }
+
+    /** Devuelve eventos cuya fecha es mayor o igual a hoy (formato yyyy-MM-dd) */
+    @GetMapping("/proximos")
+    public ResponseEntity<ApiResponse<List<EventoDTO>>> listarProximos() {
+        List<EventoDTO> lista = service.listarProximos().stream().map(this::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<EventoDTO>>builder()
+                .success(true).message("Eventos próximos").data(lista).build());
+    }
+
+    /** Busca eventos por nombre (case-insensitive, búsqueda parcial) */
+    @GetMapping("/buscar")
+    public ResponseEntity<ApiResponse<List<EventoDTO>>> buscarPorNombre(@RequestParam String nombre) {
+        List<EventoDTO> lista = service.buscarPorNombre(nombre).stream().map(this::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.<List<EventoDTO>>builder()
+                .success(true).message("Resultados para: " + nombre).data(lista).build());
+    }
+
+    // ── CONVERSIÓN ────────────────────────────────────────────────────────────
+
     private EventoDTO toDTO(Evento e) {
         EventoDTO dto = new EventoDTO();
         dto.setId(e.getId());
         dto.setNombre(e.getNombre());
         dto.setFecha(e.getFecha());
         dto.setUbicacion(e.getUbicacion());
-        if(e.getPatrocinadores() != null) {
+        if (e.getPatrocinadores() != null) {
             dto.setPatrocinadores(e.getPatrocinadores().stream().map(p -> {
                 PatrocinadorDTO pdto = new PatrocinadorDTO();
                 pdto.setId(p.getId());
                 pdto.setNombre(p.getNombre());
+                pdto.setNivel(p.getNivel());   // BUG FIX: nivel era omitido
                 return pdto;
             }).collect(Collectors.toList()));
         }
@@ -73,10 +112,11 @@ public class EventoController {
         e.setNombre(dto.getNombre());
         e.setFecha(dto.getFecha());
         e.setUbicacion(dto.getUbicacion());
-        if(dto.getPatrocinadores() != null) {
+        if (dto.getPatrocinadores() != null) {
             e.setPatrocinadores(dto.getPatrocinadores().stream().map(pdto -> {
                 Patrocinador p = new Patrocinador();
                 p.setNombre(pdto.getNombre());
+                p.setNivel(pdto.getNivel());   // BUG FIX: nivel era omitido
                 p.setEvento(e);
                 return p;
             }).collect(Collectors.toList()));

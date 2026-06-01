@@ -1,4 +1,4 @@
-package com.carmeet.ms_analytics_report.config;
+﻿package com.carmeet.ms_analytics_report.config;
 
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -70,7 +70,7 @@ public class SecurityConfig {
 
             ApiResponse<Object> res = ApiResponse.builder()
                     .success(false)
-                    .message("No autenticado o token invÃ¡lido")
+                    .message("No autenticado o token inválido")
                     .build();
 
             new ObjectMapper().writeValue(response.getOutputStream(), res);

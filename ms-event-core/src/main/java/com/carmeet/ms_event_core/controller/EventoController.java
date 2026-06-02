@@ -55,7 +55,7 @@ public class EventoController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Lista los patrocinadores de un evento */
+    
     @GetMapping("/{id}/patrocinadores")
     public ResponseEntity<ApiResponse<List<PatrocinadorDTO>>> listarPatrocinadores(@PathVariable Long id) {
         Evento evento = service.obtenerPorId(id);
@@ -71,7 +71,7 @@ public class EventoController {
                 .success(true).message("Patrocinadores del evento " + id).data(lista).build());
     }
 
-    /** Devuelve eventos cuya fecha es mayor o igual a hoy (formato yyyy-MM-dd) */
+    
     @GetMapping("/proximos")
     public ResponseEntity<ApiResponse<List<EventoDTO>>> listarProximos() {
         List<EventoDTO> lista = service.listarProximos().stream().map(this::toDTO).collect(Collectors.toList());
@@ -79,7 +79,7 @@ public class EventoController {
                 .success(true).message("Eventos próximos").data(lista).build());
     }
 
-    /** Busca eventos por nombre (case-insensitive, búsqueda parcial) */
+    
     @GetMapping("/buscar")
     public ResponseEntity<ApiResponse<List<EventoDTO>>> buscarPorNombre(@RequestParam String nombre) {
         List<EventoDTO> lista = service.buscarPorNombre(nombre).stream().map(this::toDTO).collect(Collectors.toList());

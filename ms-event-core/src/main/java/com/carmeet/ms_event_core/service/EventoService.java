@@ -54,13 +54,13 @@ public class EventoService {
         repo.deleteById(id);
     }
 
-    /** Retorna los eventos cuya fecha es >= hoy (formato yyyy-MM-dd) */
+    
     public List<Evento> listarProximos() {
         String hoy = LocalDate.now().toString();
         return repo.findEventosProximos(hoy);
     }
 
-    /** Búsqueda de eventos por nombre (case-insensitive) */
+    
     public List<Evento> buscarPorNombre(String nombre) {
         if (nombre == null || nombre.isBlank()) {
             throw new RuntimeException("El parámetro 'nombre' no puede estar vacío");

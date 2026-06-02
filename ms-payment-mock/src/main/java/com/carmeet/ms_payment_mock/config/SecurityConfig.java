@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_payment_mock.config;
+package com.carmeet.ms_payment_mock.config;
 
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

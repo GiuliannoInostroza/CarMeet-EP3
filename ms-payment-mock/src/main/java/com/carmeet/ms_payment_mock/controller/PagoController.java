@@ -55,7 +55,7 @@ public class PagoController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Obtiene el pago asociado a un ticket */
+    
     @GetMapping("/ticket/{ticketId}")
     public ResponseEntity<ApiResponse<PagoDTO>> obtenerPorTicket(@PathVariable Long ticketId) {
         PagoDTO dto = toDTO(service.obtenerPorTicketId(ticketId));
@@ -63,7 +63,7 @@ public class PagoController {
                 .success(true).message("Pago del ticket " + ticketId).data(dto).build());
     }
 
-    /** Procesa un pago mock: simula aprobación o rechazo */
+    
     @PostMapping("/procesar")
     public ResponseEntity<ApiResponse<PagoDTO>> procesarPago(@Valid @RequestBody PagoDTO dto) {
         Pago resultado = service.procesarPago(toEntity(dto));
@@ -71,7 +71,7 @@ public class PagoController {
                 .success(true).message("Pago procesado").data(toDTO(resultado)).build());
     }
 
-    /** Lista los logs de transacción de un pago */
+    
     @GetMapping("/{id}/logs")
     public ResponseEntity<ApiResponse<List<TransaccionLogDTO>>> obtenerLogs(@PathVariable Long id) {
         List<TransaccionLogDTO> logs = service.obtenerLogs(id).stream()

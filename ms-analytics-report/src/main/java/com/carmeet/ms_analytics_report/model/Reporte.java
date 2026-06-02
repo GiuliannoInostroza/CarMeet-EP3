@@ -11,8 +11,11 @@ import java.util.ArrayList;
 public class Reporte {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    private Long eventoId;
     private Integer totalEventos;
+    private Integer totalTickets;
+    private Integer totalInscripciones;
     private String fechaGeneracion;
 
     @OneToMany(mappedBy = "reporte", cascade = CascadeType.ALL, orphanRemoval = true)

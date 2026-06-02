@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_live_scoreboard.security;
+package com.carmeet.ms_live_scoreboard.security;
 
 import java.io.IOException;
 import java.util.List;

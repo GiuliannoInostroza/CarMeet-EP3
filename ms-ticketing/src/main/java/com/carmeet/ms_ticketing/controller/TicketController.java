@@ -67,7 +67,7 @@ public class TicketController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Lista los tickets de un evento */
+    
     @GetMapping("/evento/{eventoId}")
     public ResponseEntity<ApiResponse<List<TicketDTO>>> porEvento(@PathVariable Long eventoId) {
         List<TicketDTO> lista = service.obtenerPorEventoId(eventoId).stream()
@@ -76,7 +76,7 @@ public class TicketController {
                 .success(true).message("Tickets del evento " + eventoId).data(lista).build());
     }
 
-    /** Lista los tickets de un usuario */
+    
     @GetMapping("/usuario/{username}")
     public ResponseEntity<ApiResponse<List<TicketDTO>>> porUsuario(@PathVariable String username) {
         List<TicketDTO> lista = service.obtenerPorUsername(username).stream()
@@ -85,10 +85,7 @@ public class TicketController {
                 .success(true).message("Tickets del usuario: " + username).data(lista).build());
     }
 
-    /**
-     * Cancela un ticket (estado PENDIENTE → CANCELADO).
-     * No requiere WebClient.
-     */
+    
     @PatchMapping("/{id}/cancelar")
     public ResponseEntity<ApiResponse<TicketDTO>> cancelar(@PathVariable Long id) {
         TicketDTO dto = toDTO(service.cancelar(id));
@@ -96,14 +93,7 @@ public class TicketController {
                 .success(true).message("Ticket cancelado").data(dto).build());
     }
 
-    /**
-     * Paga un ticket:
-     *  1. Valida que el evento exista (ms-event-core).
-     *  2. Llama a ms-payment-mock para procesar.
-     *  3. Notifica al usuario (ms-notification-log).
-     *
-     * Request body opcional: { "metodoPago": "TARJETA" }
-     */
+    
     @PatchMapping("/{id}/pagar")
     public ResponseEntity<ApiResponse<TicketDTO>> pagar(
             @PathVariable Long id,

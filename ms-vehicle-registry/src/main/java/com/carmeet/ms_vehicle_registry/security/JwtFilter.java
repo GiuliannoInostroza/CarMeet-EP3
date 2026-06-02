@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_vehicle_registry.security;
+package com.carmeet.ms_vehicle_registry.security;
 
 import java.io.IOException;
 import java.util.List;

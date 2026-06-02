@@ -56,7 +56,7 @@ public class RecintoController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Lista las zonas de un recinto */
+    
     @GetMapping("/{id}/zonas")
     public ResponseEntity<ApiResponse<List<ZonaDTO>>> listarZonas(@PathVariable Long id) {
         List<ZonaDTO> zonas = service.listarZonas(id).stream()
@@ -70,7 +70,7 @@ public class RecintoController {
                 .success(true).message("Zonas del recinto " + id).data(zonas).build());
     }
 
-    /** Consulta disponibilidad del recinto */
+    
     @GetMapping("/{id}/disponibilidad")
     public ResponseEntity<ApiResponse<Map<String, Object>>> consultarDisponibilidad(@PathVariable Long id) {
         Map<String, Object> info = service.consultarDisponibilidad(id);
@@ -78,7 +78,7 @@ public class RecintoController {
                 .success(true).message("Disponibilidad del recinto").data(info).build());
     }
 
-    /** Registra ingreso de una persona al recinto */
+    
     @PostMapping("/{id}/registrar-ingreso")
     public ResponseEntity<ApiResponse<RecintoDTO>> registrarIngreso(@PathVariable Long id) {
         Recinto actualizado = service.registrarIngreso(id);
@@ -86,7 +86,7 @@ public class RecintoController {
                 .success(true).message("Ingreso registrado").data(toDTO(actualizado)).build());
     }
 
-    /** Registra egreso de una persona del recinto */
+    
     @PostMapping("/{id}/registrar-egreso")
     public ResponseEntity<ApiResponse<RecintoDTO>> registrarEgreso(@PathVariable Long id) {
         Recinto actualizado = service.registrarEgreso(id);

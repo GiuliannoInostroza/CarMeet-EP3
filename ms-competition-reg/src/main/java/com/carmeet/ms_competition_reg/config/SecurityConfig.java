@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_competition_reg.config;
+package com.carmeet.ms_competition_reg.config;
 
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

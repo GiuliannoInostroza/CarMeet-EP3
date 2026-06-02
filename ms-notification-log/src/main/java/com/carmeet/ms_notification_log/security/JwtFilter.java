@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_notification_log.security;
+package com.carmeet.ms_notification_log.security;
 
 import java.io.IOException;
 import java.util.List;

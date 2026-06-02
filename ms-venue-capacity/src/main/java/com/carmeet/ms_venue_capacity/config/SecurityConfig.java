@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_venue_capacity.config;
+package com.carmeet.ms_venue_capacity.config;
 
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

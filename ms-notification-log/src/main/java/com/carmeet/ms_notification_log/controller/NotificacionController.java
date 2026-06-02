@@ -55,7 +55,7 @@ public class NotificacionController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Lista notificaciones de un destinatario (usuario) */
+    
     @GetMapping("/destinatario/{username}")
     public ResponseEntity<ApiResponse<List<NotificacionDTO>>> obtenerPorDestinatario(@PathVariable String username) {
         List<NotificacionDTO> lista = service.obtenerPorDestinatario(username)
@@ -64,7 +64,7 @@ public class NotificacionController {
                 .success(true).message("Notificaciones de: " + username).data(lista).build());
     }
 
-    /** Envía una notificación — usado por otros microservicios */
+    
     @PostMapping("/enviar")
     public ResponseEntity<ApiResponse<NotificacionDTO>> enviar(@Valid @RequestBody NotificacionDTO dto) {
         Notificacion enviada = service.enviar(toEntity(dto));
@@ -72,7 +72,7 @@ public class NotificacionController {
                 .success(true).message("Notificación enviada").data(toDTO(enviada)).build());
     }
 
-    /** Marca una notificación como leída */
+    
     @PatchMapping("/{id}/marcar-leida")
     public ResponseEntity<ApiResponse<NotificacionDTO>> marcarLeida(@PathVariable Long id) {
         NotificacionDTO dto = toDTO(service.marcarLeida(id));

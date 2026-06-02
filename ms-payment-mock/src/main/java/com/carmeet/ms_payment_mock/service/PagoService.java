@@ -56,17 +56,13 @@ public class PagoService {
         repo.deleteById(id);
     }
 
-    /** Retorna el pago asociado a un ticketId */
+    
     public Pago obtenerPorTicketId(Long ticketId) {
         return repo.findByTicketId(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró pago para el ticket: " + ticketId));
     }
 
-    /**
-     * Procesa el pago de forma simulada (mock).
-     * Simula 80% aprobado, 20% rechazado.
-     * Guarda el pago con el TransaccionLog del resultado.
-     */
+    
     public Pago procesarPago(Pago pago) {
         if (pago.getMonto() == null || pago.getMonto() <= 0) {
             throw new RuntimeException("El monto del pago debe ser mayor a 0");
@@ -93,7 +89,7 @@ public class PagoService {
         return pagoProcesado;
     }
 
-    /** Retorna los logs de transacción de un pago */
+    
     public List<TransaccionLog> obtenerLogs(Long pagoId) {
         Pago pago = obtenerPorId(pagoId);
         return pago.getLogs();

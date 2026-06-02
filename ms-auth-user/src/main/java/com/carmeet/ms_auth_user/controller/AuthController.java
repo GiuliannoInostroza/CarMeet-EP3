@@ -27,7 +27,7 @@ public class AuthController {
 
     // ── ENDPOINTS PÚBLICOS ────────────────────────────────────────────────────
 
-    /** POST /api/v1/auth/register — Registro de nuevos usuarios (público) */
+    
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest req) {
         log.info("POST /api/v1/auth/register - usuario: {}", req.getUsername());
@@ -43,7 +43,7 @@ public class AuthController {
         );
     }
 
-    /** POST /api/v1/auth/login — Login (público) */
+    
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest req) {
         log.info("POST /api/v1/auth/login - usuario: {}", req.getUsername());
@@ -59,7 +59,7 @@ public class AuthController {
         );
     }
 
-    /** POST /api/v1/auth/refresh — Renovar access token (público) */
+    
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(@RequestBody RefreshRequest req) {
 
@@ -76,7 +76,7 @@ public class AuthController {
 
     // ── ENDPOINTS AUTENTICADOS ────────────────────────────────────────────────
 
-    /** GET /api/v1/auth/me — Datos del usuario autenticado */
+    
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Map<String, String>>> me(Authentication auth) {
 
@@ -99,7 +99,7 @@ public class AuthController {
 
     // ── ENDPOINTS ADMIN ───────────────────────────────────────────────────────
 
-    /** PUT /api/v1/auth/promote/{username} — Solo ADMIN: promover a admin */
+    
     @PutMapping("/promote/{username}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> promote(@PathVariable String username) {
@@ -120,7 +120,7 @@ public class AuthController {
         );
     }
 
-    /** PUT /api/v1/auth/demote/{username} — Solo ADMIN: degradar a user */
+    
     @PutMapping("/demote/{username}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Map<String, String>>> demote(@PathVariable String username) {
@@ -141,7 +141,7 @@ public class AuthController {
         );
     }
 
-    /** GET /api/v1/auth/usuarios — Solo ADMIN: lista todos los usuarios */
+    
     @GetMapping("/usuarios")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> listarUsuarios() {
@@ -158,7 +158,7 @@ public class AuthController {
         );
     }
 
-    /** GET /api/v1/auth/usuarios/{username} — Obtener usuario por username */
+    
     @GetMapping("/usuarios/{username}")
     public ResponseEntity<ApiResponse<Map<String, String>>> obtenerUsuario(@PathVariable String username) {
         Usuario user = service.obtenerPorUsername(username);

@@ -10,7 +10,7 @@
 ```
                             ┌─────────────────┐
                             │  ms-auth-user   │
-                            │   puerto: 8081  │
+                            │   puerto: 8090  │
                             │  /api/v1/auth   │
                             └────────┬────────┘
                                      │ JWT emitido
@@ -19,7 +19,7 @@
                      ▼               ▼                                   ▼
          ┌──────────────────┐ ┌──────────────┐              ┌──────────────────┐
          │  ms-event-core   │ │ms-venue-cap  │              │ms-vehicle-reg    │
-         │  puerto: 8082    │ │puerto: 8087  │              │puerto: 8086      │
+         │  puerto: 8091    │ │puerto: 8096  │              │puerto: 8092      │
          │/api/v1/eventos   │ │/api/v1/      │              │/api/v1/vehiculos │
          └──────┬───────────┘ │recintos      │              └──────┬───────────┘
                 │             └──────┬───────┘                     │
@@ -28,7 +28,7 @@
                 │                   │                              │
                 ▼                   ▼                              ▼
          ┌─────────────────────────────────────────────────────────────────┐
-         │                    ms-ticketing  (puerto: 8083)                 │
+         │                    ms-ticketing  (puerto: 8093)                 │
          │                    /api/v1/tickets                              │
          └──────────────┬──────────────────────────────────────────────────┘
                         │                    │
@@ -36,7 +36,7 @@
               ticket     ▼                   ▼
               ┌─────────────────┐   ┌──────────────────────┐
               │ ms-payment-mock │   │ ms-notification-log  │
-              │ puerto: 8084    │   │ puerto: 8085          │
+              │ puerto: 8097    │   │ puerto: 8099          │
               │/api/v1/pagos    │   │/api/v1/notificaciones│
               └─────────────────┘   └──────────────────────┘
                                              ▲
@@ -46,7 +46,7 @@
                      ┌────────────────┐      │
                      │ms-competition  │──────┘
                      │-reg            │
-                     │puerto: 8088    │
+                     │puerto: 8094    │
                      │/api/v1/        │
                      │inscripciones   │
                      └───────┬────────┘
@@ -54,12 +54,12 @@
                              ▼
                    ┌──────────────────────┐
                    │  ms-live-scoreboard  │
-                   │  puerto: 8089        │
+                   │  puerto: 8095        │
                    │  /api/v1/puntuaciones│
                    └──────────────────────┘
 
               ┌─────────────────────────────────────────────────────────┐
-              │              ms-analytics-report (puerto: 8090)         │
+              │              ms-analytics-report (puerto: 8098)         │
               │              /api/v1/reportes                            │
               │   Llama a: ms-event-core, ms-ticketing, ms-competition  │
               └─────────────────────────────────────────────────────────┘
@@ -484,7 +484,7 @@
 
 ## 5. Endpoints Completos por Microservicio
 
-### ms-auth-user (puerto: 8081)
+### ms-auth-user (puerto: 8090)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | POST | `/api/v1/auth/register` | NO | Registro |
@@ -496,7 +496,7 @@
 | GET | `/api/v1/auth/usuarios` | ADMIN | Listar usuarios |
 | GET | `/api/v1/auth/usuarios/{username}` | SÍ | Obtener usuario |
 
-### ms-event-core (puerto: 8082)
+### ms-event-core (puerto: 8091)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/eventos` | SÍ | Listar eventos |
@@ -508,7 +508,7 @@
 | GET | `/api/v1/eventos/proximos` | SÍ | Eventos futuros |
 | GET | `/api/v1/eventos/buscar?nombre=` | SÍ | Buscar por nombre |
 
-### ms-venue-capacity (puerto: 8087)
+### ms-venue-capacity (puerto: 8096)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/recintos` | SÍ | Listar recintos |
@@ -521,7 +521,7 @@
 | POST | `/api/v1/recintos/{id}/registrar-ingreso` | SÍ | Registrar ingreso |
 | POST | `/api/v1/recintos/{id}/registrar-egreso` | SÍ | Registrar egreso |
 
-### ms-vehicle-registry (puerto: 8086)
+### ms-vehicle-registry (puerto: 8092)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/vehiculos` | SÍ | Listar vehículos |
@@ -533,7 +533,7 @@
 | GET | `/api/v1/vehiculos/buscar?placa=` | SÍ | Buscar por placa |
 | POST | `/api/v1/vehiculos/{id}/mantenimientos` | SÍ | Agregar mantenimiento |
 
-### ms-ticketing (puerto: 8083)
+### ms-ticketing (puerto: 8093)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/tickets` | SÍ | Listar tickets |
@@ -546,7 +546,7 @@
 | PATCH | `/api/v1/tickets/{id}/cancelar` | SÍ | Cancelar ticket |
 | PATCH | `/api/v1/tickets/{id}/pagar` | SÍ | Pagar ticket |
 
-### ms-competition-reg (puerto: 8088)
+### ms-competition-reg (puerto: 8094)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/inscripciones` | SÍ | Listar inscripciones |
@@ -559,7 +559,7 @@
 | PATCH | `/api/v1/inscripciones/{id}/aprobar` | ADMIN | Aprobar inscripción |
 | PATCH | `/api/v1/inscripciones/{id}/rechazar` | ADMIN | Rechazar inscripción |
 
-### ms-live-scoreboard (puerto: 8089)
+### ms-live-scoreboard (puerto: 8095)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/puntuaciones` | SÍ | Listar puntuaciones |
@@ -571,7 +571,7 @@
 | GET | `/api/v1/puntuaciones/inscripcion/{inscripcionId}` | SÍ | Por inscripción |
 | GET | `/api/v1/puntuaciones/ranking` | SÍ | Top 10 global |
 
-### ms-payment-mock (puerto: 8084)
+### ms-payment-mock (puerto: 8097)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/pagos` | SÍ | Listar pagos |
@@ -583,7 +583,7 @@
 | POST | `/api/v1/pagos/procesar` | SÍ | Procesar pago (mock) |
 | GET | `/api/v1/pagos/{id}/logs` | SÍ | Logs de un pago |
 
-### ms-notification-log (puerto: 8085)
+### ms-notification-log (puerto: 8099)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/notificaciones` | SÍ | Listar notificaciones |
@@ -595,7 +595,7 @@
 | POST | `/api/v1/notificaciones/enviar` | SÍ | Enviar notificación |
 | PATCH | `/api/v1/notificaciones/{id}/marcar-leida` | SÍ | Marcar como leída |
 
-### ms-analytics-report (puerto: 8090)
+### ms-analytics-report (puerto: 8098)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/api/v1/reportes` | SÍ | Listar reportes |

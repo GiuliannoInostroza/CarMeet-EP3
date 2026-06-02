@@ -60,7 +60,7 @@ public class PuntuacionController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Ranking de puntuaciones de un evento (ordenado por puntos desc) */
+    
     @GetMapping("/evento/{eventoId}")
     public ResponseEntity<ApiResponse<List<PuntuacionDTO>>> rankingEvento(@PathVariable Long eventoId) {
         List<PuntuacionDTO> lista = service.rankingPorEvento(eventoId).stream()
@@ -69,7 +69,7 @@ public class PuntuacionController {
                 .success(true).message("Ranking del evento " + eventoId).data(lista).build());
     }
 
-    /** Puntuaciones de una inscripción */
+    
     @GetMapping("/inscripcion/{inscripcionId}")
     public ResponseEntity<ApiResponse<List<PuntuacionDTO>>> porInscripcion(@PathVariable Long inscripcionId) {
         List<PuntuacionDTO> lista = service.porInscripcion(inscripcionId).stream()
@@ -78,7 +78,7 @@ public class PuntuacionController {
                 .success(true).message("Puntuaciones de inscripción " + inscripcionId).data(lista).build());
     }
 
-    /** Top 10 puntuaciones globales */
+    
     @GetMapping("/ranking")
     public ResponseEntity<ApiResponse<List<PuntuacionDTO>>> top10() {
         List<PuntuacionDTO> lista = service.top10Global().stream()

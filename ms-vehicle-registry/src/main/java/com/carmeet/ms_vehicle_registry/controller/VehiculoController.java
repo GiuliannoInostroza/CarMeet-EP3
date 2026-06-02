@@ -55,7 +55,7 @@ public class VehiculoController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Historial de mantenimientos de un vehículo */
+    
     @GetMapping("/{id}/mantenimientos")
     public ResponseEntity<ApiResponse<List<MantenimientoDTO>>> listarMantenimientos(@PathVariable Long id) {
         List<MantenimientoDTO> lista = service.listarMantenimientos(id).stream()
@@ -69,9 +69,7 @@ public class VehiculoController {
                 .success(true).message("Historial de mantenimientos").data(lista).build());
     }
 
-    /**
-     * Agrega un mantenimiento al vehículo sin reemplazar el historial existente.
-     */
+    
     @PostMapping("/{id}/mantenimientos")
     public ResponseEntity<ApiResponse<VehiculoDTO>> agregarMantenimiento(
             @PathVariable Long id, @Valid @RequestBody MantenimientoDTO dto) {
@@ -82,7 +80,7 @@ public class VehiculoController {
                 .success(true).message("Mantenimiento agregado").data(toDTO(actualizado)).build());
     }
 
-    /** Búsqueda de vehículos por modelo */
+    
     @GetMapping("/buscar")
     public ResponseEntity<ApiResponse<List<VehiculoDTO>>> buscarPorModelo(@RequestParam String modelo) {
         List<VehiculoDTO> lista = service.buscarPorModelo(modelo).stream()

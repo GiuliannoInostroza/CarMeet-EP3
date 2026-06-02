@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_payment_mock.security;
+package com.carmeet.ms_payment_mock.security;
 
 import java.io.IOException;
 import java.util.List;

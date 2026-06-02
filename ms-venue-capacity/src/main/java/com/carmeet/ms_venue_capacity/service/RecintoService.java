@@ -56,15 +56,12 @@ public class RecintoService {
         repo.deleteById(id);
     }
 
-    /** Lista las zonas de un recinto */
+    
     public List<Zona> listarZonas(Long recintoId) {
         return obtenerPorId(recintoId).getZonas();
     }
 
-    /**
-     * Retorna información de disponibilidad del recinto:
-     * { disponible, capacidadMaxima, ocupacionActual, plazasLibres }
-     */
+    
     public Map<String, Object> consultarDisponibilidad(Long id) {
         Recinto r = obtenerPorId(id);
         int plazasLibres = r.getCapacidadMaxima() - r.getOcupacionActual();
@@ -78,7 +75,7 @@ public class RecintoService {
         return info;
     }
 
-    /** Registra el ingreso de una persona al recinto */
+    
     public Recinto registrarIngreso(Long id) {
         Recinto r = obtenerPorId(id);
         if (r.getOcupacionActual() >= r.getCapacidadMaxima()) {
@@ -88,7 +85,7 @@ public class RecintoService {
         return repo.save(r);
     }
 
-    /** Registra el egreso de una persona del recinto */
+    
     public Recinto registrarEgreso(Long id) {
         Recinto r = obtenerPorId(id);
         if (r.getOcupacionActual() <= 0) {

@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_notification_log.config;
+package com.carmeet.ms_notification_log.config;
 
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

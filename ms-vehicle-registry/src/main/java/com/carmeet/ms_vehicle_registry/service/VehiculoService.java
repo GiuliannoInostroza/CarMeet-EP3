@@ -54,15 +54,12 @@ public class VehiculoService {
         repo.deleteById(id);
     }
 
-    /** Retorna el historial de mantenimientos de un vehículo */
+    
     public List<Mantenimiento> listarMantenimientos(Long vehiculoId) {
         return obtenerPorId(vehiculoId).getMantenimientos();
     }
 
-    /**
-     * Agrega un mantenimiento nuevo sin reemplazar los existentes.
-     * A diferencia de actualizar(), este método AÑADE al historial.
-     */
+    
     public Vehiculo agregarMantenimiento(Long vehiculoId, Mantenimiento mantenimiento) {
         Vehiculo vehiculo = obtenerPorId(vehiculoId);
         mantenimiento.setVehiculo(vehiculo);
@@ -70,7 +67,7 @@ public class VehiculoService {
         return repo.save(vehiculo);
     }
 
-    /** Búsqueda de vehículos por modelo (case-insensitive) */
+    
     public List<Vehiculo> buscarPorModelo(String modelo) {
         if (modelo == null || modelo.isBlank()) {
             throw new RuntimeException("El parámetro de búsqueda no puede estar vacío");

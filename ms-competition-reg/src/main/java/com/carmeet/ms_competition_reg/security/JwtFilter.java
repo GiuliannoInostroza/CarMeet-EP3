@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_competition_reg.security;
+package com.carmeet.ms_competition_reg.security;
 
 import java.io.IOException;
 import java.util.List;

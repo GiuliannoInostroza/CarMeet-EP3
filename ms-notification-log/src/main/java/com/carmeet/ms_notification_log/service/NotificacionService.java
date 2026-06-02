@@ -57,15 +57,12 @@ public class NotificacionService {
         repo.deleteById(id);
     }
 
-    /** Retorna notificaciones de un destinatario (usuario) */
+    
     public List<Notificacion> obtenerPorDestinatario(String username) {
         return repo.findByDestinatario(username);
     }
 
-    /**
-     * Envía una notificación: la crea y simula el envío (log en consola).
-     * Es llamado por otros microservicios vía WebClient.
-     */
+    
     public Notificacion enviar(Notificacion notificacion) {
         if (notificacion.getDestinatario() == null || notificacion.getDestinatario().isBlank()) {
             throw new RuntimeException("El destinatario es obligatorio para enviar una notificación");
@@ -79,7 +76,7 @@ public class NotificacionService {
         return guardada;
     }
 
-    /** Marca una notificación como leída */
+    
     public Notificacion marcarLeida(Long id) {
         Notificacion notificacion = obtenerPorId(id);
         if (notificacion.getLeida()) {

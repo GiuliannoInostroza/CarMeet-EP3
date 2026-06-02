@@ -61,7 +61,7 @@ public class InscripcionController {
 
     // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
 
-    /** Lista inscripciones de un evento */
+    
     @GetMapping("/evento/{eventoId}")
     public ResponseEntity<ApiResponse<List<InscripcionDTO>>> porEvento(@PathVariable Long eventoId) {
         List<InscripcionDTO> lista = service.obtenerPorEventoId(eventoId).stream()
@@ -70,7 +70,7 @@ public class InscripcionController {
                 .success(true).message("Inscripciones del evento " + eventoId).data(lista).build());
     }
 
-    /** Lista inscripciones de un vehículo */
+    
     @GetMapping("/vehiculo/{vehiculoId}")
     public ResponseEntity<ApiResponse<List<InscripcionDTO>>> porVehiculo(@PathVariable Long vehiculoId) {
         List<InscripcionDTO> lista = service.obtenerPorVehiculoId(vehiculoId).stream()
@@ -79,7 +79,7 @@ public class InscripcionController {
                 .success(true).message("Inscripciones del vehículo " + vehiculoId).data(lista).build());
     }
 
-    /** Aprueba una inscripción — solo ADMIN */
+    
     @PatchMapping("/{id}/aprobar")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<InscripcionDTO>> aprobar(
@@ -90,7 +90,7 @@ public class InscripcionController {
                 .success(true).message("Inscripción aprobada").data(dto).build());
     }
 
-    /** Rechaza una inscripción — solo ADMIN */
+    
     @PatchMapping("/{id}/rechazar")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<InscripcionDTO>> rechazar(

@@ -1,4 +1,4 @@
-﻿package com.carmeet.ms_event_core.security;
+package com.carmeet.ms_event_core.security;
 
 import java.io.IOException;
 import java.util.List;

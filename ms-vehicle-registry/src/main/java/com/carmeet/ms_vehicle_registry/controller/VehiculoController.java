@@ -6,7 +6,15 @@ import com.carmeet.ms_vehicle_registry.model.Mantenimiento;
 import com.carmeet.ms_vehicle_registry.dto.VehiculoDTO;
 import com.carmeet.ms_vehicle_registry.dto.MantenimientoDTO;
 import com.carmeet.ms_vehicle_registry.service.VehiculoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -14,6 +22,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Tag(name = "Vehículos", description = "Registro de vehículos y su historial de mantenimientos")
 @RestController
 @RequestMapping("/api/v1/vehiculos")
 @RequiredArgsConstructor
@@ -21,75 +30,144 @@ public class VehiculoController {
 
     private final VehiculoService service;
 
-    // ── CRUD ──────────────────────────────────────────────────────────────────
-
+    @Operation(summary = "Listar todos los vehículos", description = "Retorna la lista completa de vehículos registrados")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
-    public ResponseEntity<ApiResponse<List<VehiculoDTO>>> listar() {
-        List<VehiculoDTO> lista = service.listar().stream().map(this::toDTO).collect(Collectors.toList());
-        return ResponseEntity.ok(ApiResponse.<List<VehiculoDTO>>builder().success(true).message("Listado").data(lista).build());
+    public ResponseEntity<ApiResponse<CollectionModel<EntityModel<VehiculoDTO>>>> listar() {
+        List<EntityModel<VehiculoDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
+            return EntityModel.of(dto,
+                    linkTo(methodOn(VehiculoController.class).obtenerPorId(dto.getId())).withSelfRel(),
+                    linkTo(methodOn(VehiculoController.class).listar()).withRel("all"));
+        }).collect(Collectors.toList());
+
+        CollectionModel<EntityModel<VehiculoDTO>> recurso = CollectionModel.of(lista,
+                linkTo(methodOn(VehiculoController.class).listar()).withSelfRel());
+
+        return ResponseEntity.ok(ApiResponse.<CollectionModel<EntityModel<VehiculoDTO>>>builder().success(true).message("Listado").data(recurso).build());
     }
 
+    @Operation(summary = "Obtener vehículo por ID", description = "Retorna un vehículo especifico por su identificador")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Vehículo encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<VehiculoDTO>> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> obtenerPorId(
+            @Parameter(description = "ID del vehículo", example = "1") @PathVariable Long id) {
         VehiculoDTO dto = toDTO(service.obtenerPorId(id));
-        return ResponseEntity.ok(ApiResponse.<VehiculoDTO>builder().success(true).message("Encontrado").data(dto).build());
+        EntityModel<VehiculoDTO> recurso = EntityModel.of(dto);
+        recurso.add(linkTo(methodOn(VehiculoController.class).obtenerPorId(id)).withSelfRel());
+        recurso.add(linkTo(methodOn(VehiculoController.class).listar()).withRel("all"));
+
+        return ResponseEntity.ok(ApiResponse.<EntityModel<VehiculoDTO>>builder().success(true).message("Encontrado").data(recurso).build());
     }
 
+    @Operation(summary = "Registrar vehículo", description = "Registra un nuevo vehículo en el sistema")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Vehículo creado exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
     @PostMapping
-    public ResponseEntity<ApiResponse<VehiculoDTO>> guardar(@Valid @RequestBody VehiculoDTO dto) {
-        Vehiculo nuevo = service.guardar(toEntity(dto));
-        return ResponseEntity.status(201).body(ApiResponse.<VehiculoDTO>builder().success(true).message("Creado").data(toDTO(nuevo)).build());
+    public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> guardar(@Valid @RequestBody VehiculoDTO req) {
+        Vehiculo nuevo = service.guardar(toEntity(req));
+        VehiculoDTO dto = toDTO(nuevo);
+        EntityModel<VehiculoDTO> recurso = EntityModel.of(dto);
+        recurso.add(linkTo(methodOn(VehiculoController.class).obtenerPorId(dto.getId())).withSelfRel());
+        recurso.add(linkTo(methodOn(VehiculoController.class).listar()).withRel("all"));
+
+        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<VehiculoDTO>>builder().success(true).message("Creado").data(recurso).build());
     }
 
+    @Operation(summary = "Actualizar vehículo", description = "Actualiza los datos de un vehículo existente")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Vehículo actualizado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<VehiculoDTO>> actualizar(@PathVariable Long id, @Valid @RequestBody VehiculoDTO dto) {
-        Vehiculo actualizado = service.actualizar(id, toEntity(dto));
-        return ResponseEntity.ok(ApiResponse.<VehiculoDTO>builder().success(true).message("Actualizado").data(toDTO(actualizado)).build());
+    public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> actualizar(
+            @Parameter(description = "ID del vehículo a actualizar", example = "1") @PathVariable Long id,
+            @Valid @RequestBody VehiculoDTO req) {
+        Vehiculo actualizado = service.actualizar(id, toEntity(req));
+        VehiculoDTO dto = toDTO(actualizado);
+        EntityModel<VehiculoDTO> recurso = EntityModel.of(dto);
+        recurso.add(linkTo(methodOn(VehiculoController.class).obtenerPorId(dto.getId())).withSelfRel());
+        recurso.add(linkTo(methodOn(VehiculoController.class).listar()).withRel("all"));
+
+        return ResponseEntity.ok(ApiResponse.<EntityModel<VehiculoDTO>>builder().success(true).message("Actualizado").data(recurso).build());
     }
 
+    @Operation(summary = "Eliminar vehículo", description = "Elimina un vehículo por su ID")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Vehículo eliminado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> eliminar(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> eliminar(
+            @Parameter(description = "ID del vehículo a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("Eliminado").build());
     }
 
-    // ── MÉTODOS DE NEGOCIO ────────────────────────────────────────────────────
-
-    
+    @Operation(summary = "Listar mantenimientos de un vehículo", description = "Retorna el historial completo de mantenimientos de un vehículo")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Historial obtenido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
     @GetMapping("/{id}/mantenimientos")
-    public ResponseEntity<ApiResponse<List<MantenimientoDTO>>> listarMantenimientos(@PathVariable Long id) {
-        List<MantenimientoDTO> lista = service.listarMantenimientos(id).stream()
+    public ResponseEntity<ApiResponse<CollectionModel<EntityModel<MantenimientoDTO>>>> listarMantenimientos(
+            @Parameter(description = "ID del vehículo", example = "1") @PathVariable Long id) {
+        List<EntityModel<MantenimientoDTO>> lista = service.listarMantenimientos(id).stream()
                 .map(m -> {
                     MantenimientoDTO dto = new MantenimientoDTO();
                     dto.setId(m.getId());
                     dto.setDescripcion(m.getDescripcion());
-                    return dto;
+                    return EntityModel.of(dto, linkTo(methodOn(VehiculoController.class).listarMantenimientos(id)).withRel("mantenimientos"));
                 }).collect(Collectors.toList());
-        return ResponseEntity.ok(ApiResponse.<List<MantenimientoDTO>>builder()
-                .success(true).message("Historial de mantenimientos").data(lista).build());
+
+        CollectionModel<EntityModel<MantenimientoDTO>> recurso = CollectionModel.of(lista,
+                linkTo(methodOn(VehiculoController.class).listarMantenimientos(id)).withSelfRel(),
+                linkTo(methodOn(VehiculoController.class).obtenerPorId(id)).withRel("vehiculo"));
+
+        return ResponseEntity.ok(ApiResponse.<CollectionModel<EntityModel<MantenimientoDTO>>>builder()
+                .success(true).message("Historial de mantenimientos").data(recurso).build());
     }
 
-    
+    @Operation(summary = "Agregar mantenimiento", description = "Registra un nuevo mantenimiento al vehículo sin reemplazar los existentes")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Mantenimiento agregado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
     @PostMapping("/{id}/mantenimientos")
-    public ResponseEntity<ApiResponse<VehiculoDTO>> agregarMantenimiento(
-            @PathVariable Long id, @Valid @RequestBody MantenimientoDTO dto) {
+    public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> agregarMantenimiento(
+            @Parameter(description = "ID del vehículo", example = "1") @PathVariable Long id,
+            @Valid @RequestBody MantenimientoDTO req) {
         Mantenimiento m = new Mantenimiento();
-        m.setDescripcion(dto.getDescripcion());
+        m.setDescripcion(req.getDescripcion());
         Vehiculo actualizado = service.agregarMantenimiento(id, m);
-        return ResponseEntity.status(201).body(ApiResponse.<VehiculoDTO>builder()
-                .success(true).message("Mantenimiento agregado").data(toDTO(actualizado)).build());
+        
+        VehiculoDTO dto = toDTO(actualizado);
+        EntityModel<VehiculoDTO> recurso = EntityModel.of(dto);
+        recurso.add(linkTo(methodOn(VehiculoController.class).obtenerPorId(dto.getId())).withSelfRel());
+        recurso.add(linkTo(methodOn(VehiculoController.class).listarMantenimientos(dto.getId())).withRel("mantenimientos"));
+
+        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<VehiculoDTO>>builder()
+                .success(true).message("Mantenimiento agregado").data(recurso).build());
     }
 
-    
+    @Operation(summary = "Buscar vehículos por modelo", description = "Busca vehículos cuyo modelo contenga el texto indicado")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resultados obtenidos") })
     @GetMapping("/buscar")
-    public ResponseEntity<ApiResponse<List<VehiculoDTO>>> buscarPorModelo(@RequestParam String modelo) {
-        List<VehiculoDTO> lista = service.buscarPorModelo(modelo).stream()
-                .map(this::toDTO).collect(Collectors.toList());
-        return ResponseEntity.ok(ApiResponse.<List<VehiculoDTO>>builder()
-                .success(true).message("Resultados para: " + modelo).data(lista).build());
-    }
+    public ResponseEntity<ApiResponse<CollectionModel<EntityModel<VehiculoDTO>>>> buscarPorModelo(
+            @Parameter(description = "Modelo del vehículo a buscar", example = "Civic") @RequestParam String modelo) {
+        List<EntityModel<VehiculoDTO>> lista = service.buscarPorModelo(modelo).stream()
+                .map(this::toDTO).map(dto -> {
+                    return EntityModel.of(dto,
+                            linkTo(methodOn(VehiculoController.class).obtenerPorId(dto.getId())).withSelfRel(),
+                            linkTo(methodOn(VehiculoController.class).listar()).withRel("all"));
+                }).collect(Collectors.toList());
 
-    // ── CONVERSIÓN ────────────────────────────────────────────────────────────
+        CollectionModel<EntityModel<VehiculoDTO>> recurso = CollectionModel.of(lista,
+                linkTo(methodOn(VehiculoController.class).buscarPorModelo(modelo)).withSelfRel());
+
+        return ResponseEntity.ok(ApiResponse.<CollectionModel<EntityModel<VehiculoDTO>>>builder()
+                .success(true).message("Resultados para: " + modelo).data(recurso).build());
+    }
 
     private VehiculoDTO toDTO(Vehiculo e) {
         VehiculoDTO dto = new VehiculoDTO();

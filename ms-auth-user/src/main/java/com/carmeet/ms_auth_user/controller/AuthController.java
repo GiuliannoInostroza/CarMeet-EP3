@@ -16,6 +16,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+// o import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -39,6 +40,8 @@ public class AuthController {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Usuario registrado exitosamente"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud invalida") })
         @PostMapping("/register")
+        // Evaluar lo del profe: public
+        // ResponseEntity<EntityModel<ApiResponse><AuthResponse>>
         public ResponseEntity<ApiResponse<EntityModel<AuthResponse>>> register(
                         @Valid @RequestBody RegisterRequest req) {
                 log.info("POST /api/v1/auth/register - usuario: {}", req.getUsername());
@@ -66,6 +69,8 @@ public class AuthController {
                 EntityModel<AuthResponse> recurso = EntityModel.of(res);
                 recurso.add(linkTo(methodOn(AuthController.class).obtenerUsuario(req.getUsername()))
                                 .withRel("usuario_info"));
+
+                // linkTo(methodOn(AuthController.class).usuario)
 
                 return ResponseEntity.ok(
                                 ApiResponse.<EntityModel<AuthResponse>>builder()

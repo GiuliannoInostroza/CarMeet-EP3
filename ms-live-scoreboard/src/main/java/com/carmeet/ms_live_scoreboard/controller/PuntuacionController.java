@@ -17,6 +17,7 @@ import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -31,16 +32,23 @@ public class PuntuacionController {
 
     private final PuntuacionService service;
 
+    private EntityModel<PuntuacionDTO> crearRecursoConLinks(PuntuacionDTO dto) {
+        EntityModel<PuntuacionDTO> recurso = EntityModel.of(dto);
+        Long id = dto.getId();
+        recurso.add(linkTo(methodOn(PuntuacionController.class).obtenerPorId(id)).withSelfRel());
+        recurso.add(linkTo(methodOn(PuntuacionController.class).listar()).withRel("all"));
+        recurso.add(linkTo(methodOn(PuntuacionController.class).actualizar(id, null)).withRel("update"));
+        recurso.add(linkTo(methodOn(PuntuacionController.class).eliminar(id)).withRel("delete"));
+        return recurso;
+    }
+
     @Operation(summary = "Listar todas las puntuaciones", description = "Retorna la lista completa de puntuaciones registradas")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> listar() {
-        List<EntityModel<PuntuacionDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(PuntuacionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(PuntuacionController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<PuntuacionDTO>> lista = service.listar().stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<PuntuacionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(PuntuacionController.class).listar()).withSelfRel());
@@ -53,14 +61,11 @@ public class PuntuacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuacion encontrada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada") })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<PuntuacionDTO>>> obtenerPorId(
             @Parameter(description = "ID de la puntuacion", example = "1") @PathVariable Long id) {
         PuntuacionDTO dto = toDTO(service.obtenerPorId(id));
-        EntityModel<PuntuacionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(PuntuacionController.class).obtenerPorId(id)).withSelfRel());
-        recurso.add(linkTo(methodOn(PuntuacionController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<PuntuacionDTO>>builder().success(true).message("Encontrado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<PuntuacionDTO>>builder().success(true).message("Encontrado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Registrar puntuacion", description = "Registra la puntuacion de una inscripcion. Valida que la inscripcion exista via WebClient")
@@ -69,18 +74,15 @@ public class PuntuacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<PuntuacionDTO>>> guardar(
             @Valid @RequestBody PuntuacionDTO req,
             HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
         Puntuacion nuevo = service.guardar(toEntity(req), bearer);
         PuntuacionDTO dto = toDTO(nuevo);
-        EntityModel<PuntuacionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(PuntuacionController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(PuntuacionController.class).listar()).withRel("all"));
-
         return ResponseEntity.status(201).body(ApiResponse.<EntityModel<PuntuacionDTO>>builder()
-                .success(true).message("Puntuación registrada").data(recurso).build());
+                .success(true).message("Puntuación registrada").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Actualizar puntuacion", description = "Actualiza los datos de una puntuacion existente")
@@ -88,16 +90,13 @@ public class PuntuacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuacion actualizada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada") })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<PuntuacionDTO>>> actualizar(
             @Parameter(description = "ID de la puntuacion a actualizar", example = "1") @PathVariable Long id,
             @Valid @RequestBody PuntuacionDTO req) {
         Puntuacion actualizado = service.actualizar(id, toEntity(req));
         PuntuacionDTO dto = toDTO(actualizado);
-        EntityModel<PuntuacionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(PuntuacionController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(PuntuacionController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<PuntuacionDTO>>builder().success(true).message("Actualizado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<PuntuacionDTO>>builder().success(true).message("Actualizado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Eliminar puntuacion", description = "Elimina una puntuacion por su ID")
@@ -105,6 +104,7 @@ public class PuntuacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuacion eliminada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada") })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @Parameter(description = "ID de la puntuacion a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);
@@ -115,14 +115,11 @@ public class PuntuacionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ranking obtenido") })
     @GetMapping("/evento/{eventoId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> rankingEvento(
             @Parameter(description = "ID del evento", example = "1") @PathVariable Long eventoId) {
         List<EntityModel<PuntuacionDTO>> lista = service.rankingPorEvento(eventoId).stream()
-                .map(this::toDTO).map(dto -> {
-                    return EntityModel.of(dto,
-                            linkTo(methodOn(PuntuacionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                            linkTo(methodOn(PuntuacionController.class).rankingEvento(eventoId)).withRel("evento_ranking"));
-                }).collect(Collectors.toList());
+                .map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<PuntuacionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(PuntuacionController.class).rankingEvento(eventoId)).withSelfRel());
@@ -135,14 +132,11 @@ public class PuntuacionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuaciones obtenidas") })
     @GetMapping("/inscripcion/{inscripcionId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> porInscripcion(
             @Parameter(description = "ID de la inscripcion", example = "1") @PathVariable Long inscripcionId) {
         List<EntityModel<PuntuacionDTO>> lista = service.porInscripcion(inscripcionId).stream()
-                .map(this::toDTO).map(dto -> {
-                    return EntityModel.of(dto,
-                            linkTo(methodOn(PuntuacionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                            linkTo(methodOn(PuntuacionController.class).porInscripcion(inscripcionId)).withRel("inscripcion_puntuaciones"));
-                }).collect(Collectors.toList());
+                .map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<PuntuacionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(PuntuacionController.class).porInscripcion(inscripcionId)).withSelfRel());
@@ -155,13 +149,10 @@ public class PuntuacionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Top 10 obtenido") })
     @GetMapping("/ranking")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> top10() {
         List<EntityModel<PuntuacionDTO>> lista = service.top10Global().stream()
-                .map(this::toDTO).map(dto -> {
-                    return EntityModel.of(dto,
-                            linkTo(methodOn(PuntuacionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                            linkTo(methodOn(PuntuacionController.class).top10()).withRel("top10_global"));
-                }).collect(Collectors.toList());
+                .map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<PuntuacionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(PuntuacionController.class).top10()).withSelfRel());

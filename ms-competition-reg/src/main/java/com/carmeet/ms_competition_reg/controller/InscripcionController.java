@@ -31,17 +31,23 @@ import java.util.stream.Collectors;
 public class InscripcionController {
 
     private final InscripcionService service;
+    private EntityModel<InscripcionDTO> crearRecursoConLinks(InscripcionDTO dto) {
+        EntityModel<InscripcionDTO> recurso = EntityModel.of(dto);
+        Long id = dto.getId();
+        recurso.add(linkTo(methodOn(InscripcionController.class).obtenerPorId(id)).withSelfRel());
+        recurso.add(linkTo(methodOn(InscripcionController.class).listar()).withRel("all"));
+        recurso.add(linkTo(methodOn(InscripcionController.class).actualizar(id, null)).withRel("update"));
+        recurso.add(linkTo(methodOn(InscripcionController.class).eliminar(id)).withRel("delete"));
+        return recurso;
+    }
 
     @Operation(summary = "Listar todas las inscripciones", description = "Retorna la lista completa de inscripciones registradas")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<InscripcionDTO>>>> listar() {
-        List<EntityModel<InscripcionDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(InscripcionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(InscripcionController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<InscripcionDTO>> lista = service.listar().stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<InscripcionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(InscripcionController.class).listar()).withSelfRel());
@@ -54,14 +60,11 @@ public class InscripcionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion encontrada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<InscripcionDTO>>> obtenerPorId(
             @Parameter(description = "ID de la inscripcion", example = "1") @PathVariable Long id) {
         InscripcionDTO dto = toDTO(service.obtenerPorId(id));
-        EntityModel<InscripcionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(InscripcionController.class).obtenerPorId(id)).withSelfRel());
-        recurso.add(linkTo(methodOn(InscripcionController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<InscripcionDTO>>builder().success(true).message("Encontrado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<InscripcionDTO>>builder().success(true).message("Encontrado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Crear inscripcion", description = "Crea una inscripcion para un evento. Valida que el evento exista via WebClient. Estado inicial: PENDIENTE")
@@ -70,18 +73,15 @@ public class InscripcionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado") })
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR')")
     public ResponseEntity<ApiResponse<EntityModel<InscripcionDTO>>> guardar(
             @Valid @RequestBody InscripcionDTO req,
             HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
         Inscripcion nuevo = service.guardar(toEntity(req), bearer);
         InscripcionDTO dto = toDTO(nuevo);
-        EntityModel<InscripcionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(InscripcionController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(InscripcionController.class).listar()).withRel("all"));
-
         return ResponseEntity.status(201).body(ApiResponse.<EntityModel<InscripcionDTO>>builder()
-                .success(true).message("Inscripción creada").data(recurso).build());
+                .success(true).message("Inscripción creada").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Actualizar inscripcion", description = "Actualiza los datos de una inscripcion existente")
@@ -89,16 +89,13 @@ public class InscripcionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion actualizada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<InscripcionDTO>>> actualizar(
             @Parameter(description = "ID de la inscripcion a actualizar", example = "1") @PathVariable Long id,
             @Valid @RequestBody InscripcionDTO req) {
         Inscripcion actualizado = service.actualizar(id, toEntity(req));
         InscripcionDTO dto = toDTO(actualizado);
-        EntityModel<InscripcionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(InscripcionController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(InscripcionController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<InscripcionDTO>>builder().success(true).message("Actualizado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<InscripcionDTO>>builder().success(true).message("Actualizado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Eliminar inscripcion", description = "Elimina una inscripcion por su ID")
@@ -106,6 +103,7 @@ public class InscripcionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion eliminada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @Parameter(description = "ID de la inscripcion a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);
@@ -116,14 +114,11 @@ public class InscripcionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripciones obtenidas") })
     @GetMapping("/evento/{eventoId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<InscripcionDTO>>>> porEvento(
             @Parameter(description = "ID del evento", example = "1") @PathVariable Long eventoId) {
         List<EntityModel<InscripcionDTO>> lista = service.obtenerPorEventoId(eventoId).stream()
-                .map(this::toDTO).map(dto -> {
-                    return EntityModel.of(dto,
-                            linkTo(methodOn(InscripcionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                            linkTo(methodOn(InscripcionController.class).porEvento(eventoId)).withRel("evento_inscripciones"));
-                }).collect(Collectors.toList());
+                .map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<InscripcionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(InscripcionController.class).porEvento(eventoId)).withSelfRel());
@@ -136,14 +131,11 @@ public class InscripcionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripciones obtenidas") })
     @GetMapping("/vehiculo/{vehiculoId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<InscripcionDTO>>>> porVehiculo(
             @Parameter(description = "ID del vehículo", example = "1") @PathVariable Long vehiculoId) {
         List<EntityModel<InscripcionDTO>> lista = service.obtenerPorVehiculoId(vehiculoId).stream()
-                .map(this::toDTO).map(dto -> {
-                    return EntityModel.of(dto,
-                            linkTo(methodOn(InscripcionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                            linkTo(methodOn(InscripcionController.class).porVehiculo(vehiculoId)).withRel("vehiculo_inscripciones"));
-                }).collect(Collectors.toList());
+                .map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<InscripcionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(InscripcionController.class).porVehiculo(vehiculoId)).withSelfRel());
@@ -165,11 +157,8 @@ public class InscripcionController {
             HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
         InscripcionDTO dto = toDTO(service.aprobar(id, bearer));
-        EntityModel<InscripcionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(InscripcionController.class).obtenerPorId(id)).withSelfRel());
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<InscripcionDTO>>builder()
-                .success(true).message("Inscripción aprobada").data(recurso).build());
+                .success(true).message("Inscripción aprobada").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Rechazar inscripcion", description = "Solo ADMIN: cambia estado a RECHAZADA y notifica al participante")
@@ -185,11 +174,8 @@ public class InscripcionController {
             HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
         InscripcionDTO dto = toDTO(service.rechazar(id, bearer));
-        EntityModel<InscripcionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(InscripcionController.class).obtenerPorId(id)).withSelfRel());
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<InscripcionDTO>>builder()
-                .success(true).message("Inscripción rechazada").data(recurso).build());
+                .success(true).message("Inscripción rechazada").data(crearRecursoConLinks(dto)).build());
     }
 
     private InscripcionDTO toDTO(Inscripcion e) {

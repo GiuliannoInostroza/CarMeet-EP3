@@ -16,6 +16,7 @@ import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -30,16 +31,23 @@ public class EventoController {
 
     private final EventoService service;
 
+    private EntityModel<EventoDTO> crearRecursoConLinks(EventoDTO dto) {
+        EntityModel<EventoDTO> recurso = EntityModel.of(dto);
+        Long id = dto.getId();
+        recurso.add(linkTo(methodOn(EventoController.class).obtenerPorId(id)).withSelfRel());
+        recurso.add(linkTo(methodOn(EventoController.class).listar()).withRel("all"));
+        recurso.add(linkTo(methodOn(EventoController.class).actualizar(id, null)).withRel("update"));
+        recurso.add(linkTo(methodOn(EventoController.class).eliminar(id)).withRel("delete"));
+        return recurso;
+    }
+
     @Operation(summary = "Listar todos los eventos", description = "Retorna la lista completa de eventos registrados en el sistema")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<EventoDTO>>>> listar() {
-        List<EntityModel<EventoDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(EventoController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(EventoController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<EventoDTO>> lista = service.listar().stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
         
         CollectionModel<EntityModel<EventoDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(EventoController.class).listar()).withSelfRel());
@@ -52,14 +60,11 @@ public class EventoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Evento encontrado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado") })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<EventoDTO>>> obtenerPorId(
             @Parameter(description = "ID del evento", example = "1") @PathVariable Long id) {
         EventoDTO dto = toDTO(service.obtenerPorId(id));
-        EntityModel<EventoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(EventoController.class).obtenerPorId(id)).withSelfRel());
-        recurso.add(linkTo(methodOn(EventoController.class).listar()).withRel("all"));
-        
-        return ResponseEntity.ok(ApiResponse.<EntityModel<EventoDTO>>builder().success(true).message("Encontrado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<EventoDTO>>builder().success(true).message("Encontrado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Crear evento", description = "Crea un nuevo evento con sus patrocinadores opcionales")
@@ -67,14 +72,11 @@ public class EventoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Evento creado exitosamente"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<EventoDTO>>> guardar(@Valid @RequestBody EventoDTO req) {
         Evento nuevo = service.guardar(toEntity(req));
         EventoDTO dto = toDTO(nuevo);
-        EntityModel<EventoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(EventoController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(EventoController.class).listar()).withRel("all"));
-
-        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<EventoDTO>>builder().success(true).message("Creado").data(recurso).build());
+        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<EventoDTO>>builder().success(true).message("Creado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Actualizar evento", description = "Actualiza los datos de un evento existente")
@@ -82,16 +84,13 @@ public class EventoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Evento actualizado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado") })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<EventoDTO>>> actualizar(
             @Parameter(description = "ID del evento a actualizar", example = "1") @PathVariable Long id,
             @Valid @RequestBody EventoDTO req) {
         Evento actualizado = service.actualizar(id, toEntity(req));
         EventoDTO dto = toDTO(actualizado);
-        EntityModel<EventoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(EventoController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(EventoController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<EventoDTO>>builder().success(true).message("Actualizado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<EventoDTO>>builder().success(true).message("Actualizado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Eliminar evento", description = "Elimina un evento por su ID")
@@ -99,6 +98,7 @@ public class EventoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Evento eliminado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado") })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @Parameter(description = "ID del evento a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);
@@ -110,6 +110,7 @@ public class EventoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Patrocinadores obtenidos"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado") })
     @GetMapping("/{id}/patrocinadores")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PatrocinadorDTO>>>> listarPatrocinadores(
             @Parameter(description = "ID del evento", example = "1") @PathVariable Long id) {
         Evento evento = service.obtenerPorId(id);
@@ -119,7 +120,9 @@ public class EventoController {
                     dto.setId(p.getId());
                     dto.setNombre(p.getNombre());
                     dto.setNivel(p.getNivel());
-                    return EntityModel.of(dto, linkTo(methodOn(EventoController.class).listarPatrocinadores(id)).withRel("patrocinadores"));
+                    return EntityModel.of(dto, 
+                            linkTo(methodOn(EventoController.class).listarPatrocinadores(id)).withRel("patrocinadores"),
+                            linkTo(methodOn(EventoController.class).obtenerPorId(id)).withRel("evento"));
                 }).collect(Collectors.toList());
                 
         CollectionModel<EntityModel<PatrocinadorDTO>> recurso = CollectionModel.of(lista,
@@ -134,12 +137,9 @@ public class EventoController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Eventos proximos obtenidos") })
     @GetMapping("/proximos")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<EventoDTO>>>> listarProximos() {
-        List<EntityModel<EventoDTO>> lista = service.listarProximos().stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(EventoController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(EventoController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<EventoDTO>> lista = service.listarProximos().stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
         
         CollectionModel<EntityModel<EventoDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(EventoController.class).listarProximos()).withSelfRel());
@@ -152,13 +152,10 @@ public class EventoController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resultados obtenidos") })
     @GetMapping("/buscar")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<EventoDTO>>>> buscarPorNombre(
             @Parameter(description = "Texto a buscar en el nombre del evento", example = "Rally") @RequestParam String nombre) {
-        List<EntityModel<EventoDTO>> lista = service.buscarPorNombre(nombre).stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(EventoController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(EventoController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<EventoDTO>> lista = service.buscarPorNombre(nombre).stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
         
         CollectionModel<EntityModel<EventoDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(EventoController.class).buscarPorNombre(nombre)).withSelfRel());

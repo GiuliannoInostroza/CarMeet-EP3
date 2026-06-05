@@ -29,7 +29,7 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
 
-    // REGISTER - asigna ROLE_USER por defecto
+    // REGISTER - asigna ROLE_ESPECTADOR por defecto si no se especifica
     public AuthResponse register(RegisterRequest req) {
 
         if (usuarioRepo.findByUsername(req.getUsername()).isPresent()) {
@@ -39,7 +39,21 @@ public class AuthService {
         Usuario user = new Usuario();
         user.setUsername(req.getUsername());
         user.setPassword(encoder.encode(req.getPassword()));
-        user.setRole("ROLE_USER");
+        
+        String requestedRole = req.getRole();
+        if (requestedRole == null || requestedRole.trim().isEmpty()) {
+            requestedRole = "ROLE_ESPECTADOR";
+        } else {
+            if (!requestedRole.startsWith("ROLE_")) {
+                requestedRole = "ROLE_" + requestedRole.toUpperCase();
+            }
+        }
+        
+        if ("ROLE_ADMIN".equals(requestedRole) || "ROLE_USER".equals(requestedRole)) {
+            requestedRole = "ROLE_ESPECTADOR";
+        }
+        
+        user.setRole(requestedRole);
 
         usuarioRepo.save(user);
 
@@ -93,7 +107,7 @@ public class AuthService {
     public Usuario degradarAUser(String username) {
         Usuario user = usuarioRepo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
-        user.setRole("ROLE_USER");
+        user.setRole("ROLE_ESPECTADOR");
         return usuarioRepo.save(user);
     }
 

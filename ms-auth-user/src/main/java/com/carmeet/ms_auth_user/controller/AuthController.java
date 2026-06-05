@@ -95,13 +95,12 @@ public class AuthController {
                                                 .message("Token renovado")
                                                 .data(recurso)
                                                 .build());
-        }
-
-        @Operation(summary = "Obtener usuario actual", description = "Devuelve el username y rol del usuario autenticado en la sesion")
+                @Operation(summary = "Obtener usuario actual", description = "Devuelve el username y rol del usuario autenticado en la sesion")
         @ApiResponses(value = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Usuario obtenido"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado") })
         @GetMapping("/me")
+        @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
         public ResponseEntity<ApiResponse<EntityModel<Map<String, String>>>> me(Authentication auth) {
                 String username = auth.getName();
                 Usuario user = service.obtenerPorUsername(username);
@@ -172,12 +171,12 @@ public class AuthController {
         public ResponseEntity<ApiResponse<CollectionModel<EntityModel<Map<String, String>>>>> listarUsuarios() {
                 List<EntityModel<Map<String, String>>> lista = service.listarUsuarios().stream()
                                 .map(u -> {
-                                        Map<String, String> m = Map.of("username", u.getUsername(), "role",
-                                                        u.getRole());
-                                        return EntityModel.of(m,
-                                                        linkTo(methodOn(AuthController.class)
-                                                                        .obtenerUsuario(u.getUsername()))
-                                                                        .withSelfRel());
+                                         Map<String, String> m = Map.of("username", u.getUsername(), "role",
+                                                         u.getRole());
+                                         return EntityModel.of(m,
+                                                         linkTo(methodOn(AuthController.class)
+                                                                         .obtenerUsuario(u.getUsername()))
+                                                                         .withSelfRel());
                                 })
                                 .collect(Collectors.toList());
 
@@ -197,6 +196,7 @@ public class AuthController {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Usuario encontrado"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Usuario no encontrado") })
         @GetMapping("/usuarios/{username}")
+        @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
         public ResponseEntity<ApiResponse<EntityModel<Map<String, String>>>> obtenerUsuario(
                         @Parameter(description = "Username del usuario a buscar", example = "juanito99") @PathVariable String username) {
                 Usuario user = service.obtenerPorUsername(username);

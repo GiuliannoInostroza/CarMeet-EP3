@@ -16,6 +16,7 @@ import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -30,16 +31,23 @@ public class NotificacionController {
 
     private final NotificacionService service;
 
+    private EntityModel<NotificacionDTO> crearRecursoConLinks(NotificacionDTO dto) {
+        EntityModel<NotificacionDTO> recurso = EntityModel.of(dto);
+        Long id = dto.getId();
+        recurso.add(linkTo(methodOn(NotificacionController.class).obtenerPorId(id)).withSelfRel());
+        recurso.add(linkTo(methodOn(NotificacionController.class).listar()).withRel("all"));
+        recurso.add(linkTo(methodOn(NotificacionController.class).actualizar(id, null)).withRel("update"));
+        recurso.add(linkTo(methodOn(NotificacionController.class).eliminar(id)).withRel("delete"));
+        return recurso;
+    }
+
     @Operation(summary = "Listar todas las notificaciones", description = "Retorna la lista completa de notificaciones registradas")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<NotificacionDTO>>>> listar() {
-        List<EntityModel<NotificacionDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(NotificacionController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(NotificacionController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<NotificacionDTO>> lista = service.listar().stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<NotificacionDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(NotificacionController.class).listar()).withSelfRel());
@@ -52,14 +60,11 @@ public class NotificacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion encontrada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada") })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> obtenerPorId(
             @Parameter(description = "ID de la notificacion", example = "1") @PathVariable Long id) {
         NotificacionDTO dto = toDTO(service.obtenerPorId(id));
-        EntityModel<NotificacionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(NotificacionController.class).obtenerPorId(id)).withSelfRel());
-        recurso.add(linkTo(methodOn(NotificacionController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<NotificacionDTO>>builder().success(true).message("Encontrado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<NotificacionDTO>>builder().success(true).message("Encontrado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Crear notificacion directamente", description = "Registra una notificacion sin simular proceso de envio")
@@ -67,14 +72,11 @@ public class NotificacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Notificacion creada exitosamente"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> guardar(@Valid @RequestBody NotificacionDTO req) {
         Notificacion nuevo = service.guardar(toEntity(req));
         NotificacionDTO dto = toDTO(nuevo);
-        EntityModel<NotificacionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(NotificacionController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(NotificacionController.class).listar()).withRel("all"));
-
-        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<NotificacionDTO>>builder().success(true).message("Creado").data(recurso).build());
+        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<NotificacionDTO>>builder().success(true).message("Creado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Actualizar notificacion", description = "Actualiza los datos de una notificacion existente")
@@ -82,23 +84,21 @@ public class NotificacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion actualizada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada") })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> actualizar(
             @Parameter(description = "ID de la notificacion a actualizar", example = "1") @PathVariable Long id,
             @Valid @RequestBody NotificacionDTO req) {
         Notificacion actualizado = service.actualizar(id, toEntity(req));
         NotificacionDTO dto = toDTO(actualizado);
-        EntityModel<NotificacionDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(NotificacionController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(NotificacionController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<NotificacionDTO>>builder().success(true).message("Actualizado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<NotificacionDTO>>builder().success(true).message("Actualizado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Eliminar notificacion", description = "Elimina una notificacion por su ID")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion eliminada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion eliminado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrado") })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @Parameter(description = "ID de la notificacion a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);

@@ -17,6 +17,7 @@ import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -32,16 +33,23 @@ public class TicketController {
 
     private final TicketService service;
 
+    private EntityModel<TicketDTO> crearRecursoConLinks(TicketDTO dto) {
+        EntityModel<TicketDTO> recurso = EntityModel.of(dto);
+        Long id = dto.getId();
+        recurso.add(linkTo(methodOn(TicketController.class).obtenerPorId(id)).withSelfRel());
+        recurso.add(linkTo(methodOn(TicketController.class).listar()).withRel("all"));
+        recurso.add(linkTo(methodOn(TicketController.class).actualizar(id, null)).withRel("update"));
+        recurso.add(linkTo(methodOn(TicketController.class).eliminar(id)).withRel("delete"));
+        return recurso;
+    }
+
     @Operation(summary = "Listar todos los tickets", description = "Retorna la lista completa de tickets registrados")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<TicketDTO>>>> listar() {
-        List<EntityModel<TicketDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(TicketController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(TicketController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<TicketDTO>> lista = service.listar().stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<TicketDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(TicketController.class).listar()).withSelfRel());
@@ -55,15 +63,12 @@ public class TicketController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ticket encontrado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ticket no encontrado") })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<TicketDTO>>> obtenerPorId(
             @Parameter(description = "ID del ticket", example = "1") @PathVariable Long id) {
         TicketDTO dto = toDTO(service.obtenerPorId(id));
-        EntityModel<TicketDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(TicketController.class).obtenerPorId(id)).withSelfRel());
-        recurso.add(linkTo(methodOn(TicketController.class).listar()).withRel("all"));
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<TicketDTO>>builder()
-                .success(true).message("Encontrado").data(recurso).build());
+                .success(true).message("Encontrado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Crear ticket", description = "Crea un ticket para un evento. Valida que el evento exista via WebClient. Estado inicial: PENDIENTE")
@@ -72,18 +77,15 @@ public class TicketController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado") })
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<TicketDTO>>> guardar(
             @Valid @RequestBody TicketDTO req,
             HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
         Ticket nuevo = service.guardar(toEntity(req), bearer);
         TicketDTO dto = toDTO(nuevo);
-        EntityModel<TicketDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(TicketController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(TicketController.class).listar()).withRel("all"));
-
         return ResponseEntity.status(201).body(ApiResponse.<EntityModel<TicketDTO>>builder()
-                .success(true).message("Ticket creado").data(recurso).build());
+                .success(true).message("Ticket creado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Actualizar ticket", description = "Actualiza los datos de un ticket existente")
@@ -91,17 +93,14 @@ public class TicketController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ticket actualizado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ticket no encontrado") })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<TicketDTO>>> actualizar(
             @Parameter(description = "ID del ticket a actualizar", example = "1") @PathVariable Long id,
             @Valid @RequestBody TicketDTO req) {
         Ticket actualizado = service.actualizar(id, toEntity(req));
         TicketDTO dto = toDTO(actualizado);
-        EntityModel<TicketDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(TicketController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(TicketController.class).listar()).withRel("all"));
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<TicketDTO>>builder()
-                .success(true).message("Actualizado").data(recurso).build());
+                .success(true).message("Actualizado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Eliminar ticket", description = "Elimina un ticket por su ID")
@@ -109,6 +108,7 @@ public class TicketController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ticket eliminado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ticket no encontrado") })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @Parameter(description = "ID del ticket a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);
@@ -120,14 +120,11 @@ public class TicketController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Tickets obtenidos") })
     @GetMapping("/evento/{eventoId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<TicketDTO>>>> porEvento(
             @Parameter(description = "ID del evento", example = "1") @PathVariable Long eventoId) {
         List<EntityModel<TicketDTO>> lista = service.obtenerPorEventoId(eventoId).stream()
-                .map(this::toDTO).map(dto -> {
-                    return EntityModel.of(dto,
-                            linkTo(methodOn(TicketController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                            linkTo(methodOn(TicketController.class).porEvento(eventoId)).withRel("evento_tickets"));
-                }).collect(Collectors.toList());
+                .map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<TicketDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(TicketController.class).porEvento(eventoId)).withSelfRel());
@@ -140,14 +137,11 @@ public class TicketController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Tickets obtenidos") })
     @GetMapping("/usuario/{username}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<TicketDTO>>>> porUsuario(
             @Parameter(description = "Username del usuario", example = "juanito99") @PathVariable String username) {
         List<EntityModel<TicketDTO>> lista = service.obtenerPorUsername(username).stream()
-                .map(this::toDTO).map(dto -> {
-                    return EntityModel.of(dto,
-                            linkTo(methodOn(TicketController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                            linkTo(methodOn(TicketController.class).porUsuario(username)).withRel("usuario_tickets"));
-                }).collect(Collectors.toList());
+                .map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<TicketDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(TicketController.class).porUsuario(username)).withSelfRel());
@@ -162,14 +156,12 @@ public class TicketController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "El ticket no esta en estado PENDIENTE"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ticket no encontrado") })
     @PatchMapping("/{id}/cancelar")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<TicketDTO>>> cancelar(
             @Parameter(description = "ID del ticket a cancelar", example = "1") @PathVariable Long id) {
         TicketDTO dto = toDTO(service.cancelar(id));
-        EntityModel<TicketDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(TicketController.class).obtenerPorId(id)).withSelfRel());
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<TicketDTO>>builder()
-                .success(true).message("Ticket cancelado").data(recurso).build());
+                .success(true).message("Ticket cancelado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Pagar ticket", description = "Procesa el pago del ticket via ms-payment-mock. Si es aprobado, cambia estado a PAGADO y envia notificacion")
@@ -179,6 +171,7 @@ public class TicketController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "El ticket no esta en estado PENDIENTE"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Ticket no encontrado") })
     @PatchMapping("/{id}/pagar")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<TicketDTO>>> pagar(
             @Parameter(description = "ID del ticket a pagar", example = "1") @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body,
@@ -186,11 +179,8 @@ public class TicketController {
         String bearer = request.getHeader("Authorization");
         String metodoPago = (body != null) ? body.get("metodoPago") : "TARJETA";
         TicketDTO dto = toDTO(service.pagar(id, metodoPago, bearer));
-        EntityModel<TicketDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(TicketController.class).obtenerPorId(id)).withSelfRel());
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<TicketDTO>>builder()
-                .success(true).message("Pago procesado exitosamente").data(recurso).build());
+                .success(true).message("Pago procesado exitosamente").data(crearRecursoConLinks(dto)).build());
     }
 
     private TicketDTO toDTO(Ticket e) {

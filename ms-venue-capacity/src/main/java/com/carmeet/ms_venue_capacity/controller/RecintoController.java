@@ -16,6 +16,7 @@ import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -31,16 +32,23 @@ public class RecintoController {
 
     private final RecintoService service;
 
+    private EntityModel<RecintoDTO> crearRecursoConLinks(RecintoDTO dto) {
+        EntityModel<RecintoDTO> recurso = EntityModel.of(dto);
+        Long id = dto.getId();
+        recurso.add(linkTo(methodOn(RecintoController.class).obtenerPorId(id)).withSelfRel());
+        recurso.add(linkTo(methodOn(RecintoController.class).listar()).withRel("all"));
+        recurso.add(linkTo(methodOn(RecintoController.class).actualizar(id, null)).withRel("update"));
+        recurso.add(linkTo(methodOn(RecintoController.class).eliminar(id)).withRel("delete"));
+        return recurso;
+    }
+
     @Operation(summary = "Listar todos los recintos", description = "Retorna la lista completa de recintos registrados")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<RecintoDTO>>>> listar() {
-        List<EntityModel<RecintoDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
-            return EntityModel.of(dto,
-                    linkTo(methodOn(RecintoController.class).obtenerPorId(dto.getId())).withSelfRel(),
-                    linkTo(methodOn(RecintoController.class).listar()).withRel("all"));
-        }).collect(Collectors.toList());
+        List<EntityModel<RecintoDTO>> lista = service.listar().stream().map(this::toDTO).map(this::crearRecursoConLinks).collect(Collectors.toList());
 
         CollectionModel<EntityModel<RecintoDTO>> recurso = CollectionModel.of(lista,
                 linkTo(methodOn(RecintoController.class).listar()).withSelfRel());
@@ -53,14 +61,11 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Recinto encontrado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> obtenerPorId(
             @Parameter(description = "ID del recinto", example = "1") @PathVariable Long id) {
         RecintoDTO dto = toDTO(service.obtenerPorId(id));
-        EntityModel<RecintoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(RecintoController.class).obtenerPorId(id)).withSelfRel());
-        recurso.add(linkTo(methodOn(RecintoController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<RecintoDTO>>builder().success(true).message("Encontrado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<RecintoDTO>>builder().success(true).message("Encontrado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Crear recinto", description = "Crea un nuevo recinto con sus zonas opcionales")
@@ -68,14 +73,11 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Recinto creado exitosamente"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> guardar(@Valid @RequestBody RecintoDTO req) {
         Recinto nuevo = service.guardar(toEntity(req));
         RecintoDTO dto = toDTO(nuevo);
-        EntityModel<RecintoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(RecintoController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(RecintoController.class).listar()).withRel("all"));
-
-        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<RecintoDTO>>builder().success(true).message("Creado").data(recurso).build());
+        return ResponseEntity.status(201).body(ApiResponse.<EntityModel<RecintoDTO>>builder().success(true).message("Creado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Actualizar recinto", description = "Actualiza los datos de un recinto existente")
@@ -83,16 +85,13 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Recinto actualizado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> actualizar(
             @Parameter(description = "ID del recinto a actualizar", example = "1") @PathVariable Long id,
             @Valid @RequestBody RecintoDTO req) {
         Recinto actualizado = service.actualizar(id, toEntity(req));
         RecintoDTO dto = toDTO(actualizado);
-        EntityModel<RecintoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(RecintoController.class).obtenerPorId(dto.getId())).withSelfRel());
-        recurso.add(linkTo(methodOn(RecintoController.class).listar()).withRel("all"));
-
-        return ResponseEntity.ok(ApiResponse.<EntityModel<RecintoDTO>>builder().success(true).message("Actualizado").data(recurso).build());
+        return ResponseEntity.ok(ApiResponse.<EntityModel<RecintoDTO>>builder().success(true).message("Actualizado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Eliminar recinto", description = "Elimina un recinto por su ID")
@@ -100,6 +99,7 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Recinto eliminado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @Parameter(description = "ID del recinto a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);
@@ -111,6 +111,7 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Zonas obtenidas"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
     @GetMapping("/{id}/zonas")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<ZonaDTO>>>> listarZonas(
             @Parameter(description = "ID del recinto", example = "1") @PathVariable Long id) {
         List<EntityModel<ZonaDTO>> zonas = service.listarZonas(id).stream()
@@ -118,7 +119,9 @@ public class RecintoController {
                     ZonaDTO dto = new ZonaDTO();
                     dto.setId(z.getId());
                     dto.setNombre(z.getNombre());
-                    return EntityModel.of(dto, linkTo(methodOn(RecintoController.class).listarZonas(id)).withRel("zonas"));
+                    return EntityModel.of(dto, 
+                            linkTo(methodOn(RecintoController.class).listarZonas(id)).withRel("zonas"),
+                            linkTo(methodOn(RecintoController.class).obtenerPorId(id)).withRel("recinto"));
                 }).collect(Collectors.toList());
 
         CollectionModel<EntityModel<ZonaDTO>> recurso = CollectionModel.of(zonas,
@@ -134,6 +137,7 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Disponibilidad obtenida"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
     @GetMapping("/{id}/disponibilidad")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<Map<String, Object>>>> consultarDisponibilidad(
             @Parameter(description = "ID del recinto", example = "1") @PathVariable Long id) {
         Map<String, Object> info = service.consultarDisponibilidad(id);
@@ -151,16 +155,13 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Recinto lleno"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
     @PostMapping("/{id}/registrar-ingreso")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> registrarIngreso(
             @Parameter(description = "ID del recinto", example = "1") @PathVariable Long id) {
         Recinto actualizado = service.registrarIngreso(id);
         RecintoDTO dto = toDTO(actualizado);
-        EntityModel<RecintoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(RecintoController.class).consultarDisponibilidad(id)).withRel("disponibilidad"));
-        recurso.add(linkTo(methodOn(RecintoController.class).obtenerPorId(id)).withSelfRel());
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<RecintoDTO>>builder()
-                .success(true).message("Ingreso registrado").data(recurso).build());
+                .success(true).message("Ingreso registrado").data(crearRecursoConLinks(dto)).build());
     }
 
     @Operation(summary = "Registrar egreso del recinto", description = "Decrementa la ocupacion actual del recinto en 1")
@@ -168,16 +169,13 @@ public class RecintoController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Egreso registrado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
     @PostMapping("/{id}/registrar-egreso")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> registrarEgreso(
             @Parameter(description = "ID del recinto", example = "1") @PathVariable Long id) {
         Recinto actualizado = service.registrarEgreso(id);
         RecintoDTO dto = toDTO(actualizado);
-        EntityModel<RecintoDTO> recurso = EntityModel.of(dto);
-        recurso.add(linkTo(methodOn(RecintoController.class).consultarDisponibilidad(id)).withRel("disponibilidad"));
-        recurso.add(linkTo(methodOn(RecintoController.class).obtenerPorId(id)).withSelfRel());
-
         return ResponseEntity.ok(ApiResponse.<EntityModel<RecintoDTO>>builder()
-                .success(true).message("Egreso registrado").data(recurso).build());
+                .success(true).message("Egreso registrado").data(crearRecursoConLinks(dto)).build());
     }
 
     private RecintoDTO toDTO(Recinto e) {

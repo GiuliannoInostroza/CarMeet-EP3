@@ -109,6 +109,7 @@ public class NotificacionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificaciones obtenidas") })
     @GetMapping("/destinatario/{username}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<NotificacionDTO>>>> obtenerPorDestinatario(
             @Parameter(description = "Username del destinatario", example = "juanito99") @PathVariable String username) {
         List<EntityModel<NotificacionDTO>> lista = service.obtenerPorDestinatario(username)
@@ -129,6 +130,7 @@ public class NotificacionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Notificacion enviada") })
     @PostMapping("/enviar")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> enviar(@Valid @RequestBody NotificacionDTO req) {
         Notificacion enviada = service.enviar(toEntity(req));
         NotificacionDTO dto = toDTO(enviada);
@@ -144,6 +146,7 @@ public class NotificacionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion marcada como leida"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada") })
     @PatchMapping("/{id}/marcar-leida")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> marcarLeida(
             @Parameter(description = "ID de la notificacion", example = "1") @PathVariable Long id) {
         NotificacionDTO dto = toDTO(service.marcarLeida(id));

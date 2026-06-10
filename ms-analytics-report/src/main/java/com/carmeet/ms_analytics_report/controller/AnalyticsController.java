@@ -18,6 +18,7 @@ import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +36,7 @@ public class AnalyticsController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<ReporteDTO>>>> listar() {
         List<EntityModel<ReporteDTO>> lista = service.listar().stream().map(this::toDTO).map(dto -> {
             return EntityModel.of(dto,
@@ -54,6 +56,7 @@ public class AnalyticsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reporte encontrado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado") })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> obtenerPorId(
             @Parameter(description = "ID del reporte", example = "1") @PathVariable Long id) {
         ReporteDTO dto = toDTO(service.obtenerPorId(id));
@@ -70,6 +73,7 @@ public class AnalyticsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Reporte creado exitosamente"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> guardar(@Valid @RequestBody ReporteDTO req) {
         Reporte nuevo = service.guardar(toEntity(req));
         ReporteDTO dto = toDTO(nuevo);
@@ -86,6 +90,7 @@ public class AnalyticsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reporte actualizado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado") })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> actualizar(
             @Parameter(description = "ID del reporte a actualizar", example = "1") @PathVariable Long id,
             @Valid @RequestBody ReporteDTO req) {
@@ -104,6 +109,7 @@ public class AnalyticsController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reporte eliminado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado") })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
             @Parameter(description = "ID del reporte a eliminar", example = "1") @PathVariable Long id) {
         service.eliminar(id);
@@ -115,6 +121,7 @@ public class AnalyticsController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Reporte generado exitosamente") })
     @PostMapping("/generar/{eventoId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> generarReporte(
             @Parameter(description = "ID del evento a reportar", example = "1") @PathVariable Long eventoId,
             HttpServletRequest request) {
@@ -134,6 +141,7 @@ public class AnalyticsController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resumen de métricas obtenido") })
     @GetMapping("/metricas/resumen")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<MetricaDTO>>>> resumenMetricas() {
         List<EntityModel<MetricaDTO>> metricas = service.resumenMetricas().stream()
                 .map(dto -> EntityModel.of(dto, linkTo(methodOn(AnalyticsController.class).resumenMetricas()).withRel("resumen")))

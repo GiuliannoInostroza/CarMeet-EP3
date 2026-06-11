@@ -40,8 +40,7 @@ public class AuthController {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Usuario registrado exitosamente"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud invalida") })
         @PostMapping("/register")
-        // Evaluar lo del profe: public
-        // ResponseEntity<EntityModel<ApiResponse><AuthResponse>>
+
         public ResponseEntity<ApiResponse<EntityModel<AuthResponse>>> register(
                         @Valid @RequestBody RegisterRequest req) {
                 log.info("POST /api/v1/auth/register - usuario: {}", req.getUsername());
@@ -95,7 +94,9 @@ public class AuthController {
                                                 .message("Token renovado")
                                                 .data(recurso)
                                                 .build());
-                @Operation(summary = "Obtener usuario actual", description = "Devuelve el username y rol del usuario autenticado en la sesion")
+        }
+
+        @Operation(summary = "Obtener usuario actual", description = "Devuelve el username y rol del usuario autenticado en la sesion")
         @ApiResponses(value = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Usuario obtenido"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado") })
@@ -171,12 +172,12 @@ public class AuthController {
         public ResponseEntity<ApiResponse<CollectionModel<EntityModel<Map<String, String>>>>> listarUsuarios() {
                 List<EntityModel<Map<String, String>>> lista = service.listarUsuarios().stream()
                                 .map(u -> {
-                                         Map<String, String> m = Map.of("username", u.getUsername(), "role",
-                                                         u.getRole());
-                                         return EntityModel.of(m,
-                                                         linkTo(methodOn(AuthController.class)
-                                                                         .obtenerUsuario(u.getUsername()))
-                                                                         .withSelfRel());
+                                        Map<String, String> m = Map.of("username", u.getUsername(), "role",
+                                                        u.getRole());
+                                        return EntityModel.of(m,
+                                                        linkTo(methodOn(AuthController.class)
+                                                                        .obtenerUsuario(u.getUsername()))
+                                                                        .withSelfRel());
                                 })
                                 .collect(Collectors.toList());
 

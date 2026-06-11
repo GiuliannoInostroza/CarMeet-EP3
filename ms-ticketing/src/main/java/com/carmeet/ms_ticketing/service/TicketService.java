@@ -73,7 +73,8 @@ public class TicketService {
     public Ticket cancelar(Long id) {
         Ticket ticket = obtenerPorId(id);
         if (!"PENDIENTE".equals(ticket.getEstado())) {
-            throw new RuntimeException("Solo se pueden cancelar tickets en estado PENDIENTE. Estado actual: " + ticket.getEstado());
+            throw new RuntimeException(
+                    "Solo se pueden cancelar tickets en estado PENDIENTE. Estado actual: " + ticket.getEstado());
         }
         ticket.setEstado("CANCELADO");
         return repo.save(ticket);
@@ -82,7 +83,8 @@ public class TicketService {
     public Ticket pagar(Long id, String metodoPago, String bearerToken) {
         Ticket ticket = obtenerPorId(id);
         if (!"PENDIENTE".equals(ticket.getEstado())) {
-            throw new RuntimeException("Solo se pueden pagar tickets en estado PENDIENTE. Estado actual: " + ticket.getEstado());
+            throw new RuntimeException(
+                    "Solo se pueden pagar tickets en estado PENDIENTE. Estado actual: " + ticket.getEstado());
         }
         try {
             pagoClient.procesarPago(ticket.getId(), ticket.getPrecio(), metodoPago, bearerToken);
@@ -95,8 +97,7 @@ public class TicketService {
             notificacionClient.enviar(
                     ticket.getUsername(),
                     "Tu ticket #" + ticket.getId() + " ha sido PAGADO. Precio: $" + ticket.getPrecio(),
-                    bearerToken
-            );
+                    bearerToken);
         }
         return guardado;
     }

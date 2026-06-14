@@ -1,6 +1,7 @@
 package com.carmeet.ms_ticketing.client;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,7 +20,7 @@ public class PagoMockClient {
     }
 
     // envia solicitud de pago al mock, retorna el resultado
-    public Map procesarPago(Long ticketId, Double monto, String metodoPago, String bearerToken) {
+    public Map<String, Object> procesarPago(Long ticketId, Double monto, String metodoPago, String bearerToken) {
         Map<String, Object> body = Map.of(
                 "ticketId", ticketId,
                 "monto", monto,
@@ -31,7 +32,7 @@ public class PagoMockClient {
                 .header(HttpHeaders.CONTENT_TYPE, "application/json")
                 .bodyValue(body)
                 .retrieve()
-                .bodyToMono(Map.class)
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .block();
     }
 }

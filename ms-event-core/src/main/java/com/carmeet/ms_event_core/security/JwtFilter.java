@@ -35,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             String token = header.substring(7);
 
-            // Evita doble autenticaciÃ³n
+            // Evita doble Autenticación
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 if (jwtUtil.esValido(token)) {
@@ -54,16 +54,24 @@ public class JwtFilter extends OncePerRequestFilter {
                     log.info("Usuario autenticado: user={}, role={}", user, role);
 
                 } else {
-                    log.warn("Token invÃ¡lido");
+                    log.warn("Token inválido");
 
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json");
-                    res.getWriter().write("{\"error\":\"Token invÃ¡lido\"}");
+                    res.getWriter().write("{\"error\":\"Token inválido\"}");
                     return;
                 }
             }
         }
 
         chain.doFilter(req, res);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.equals("/swagger-ui.html");
     }
 }

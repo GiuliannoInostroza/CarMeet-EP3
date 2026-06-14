@@ -15,6 +15,14 @@ public class Zona {
 
     private String nombre; // Ej: VIP, Galeria
 
+    @Column(name = "capacidad", nullable = false)
+    @Builder.Default
+    private Integer capacidad = 0;
+
+    @Column(name = "ocupacion", nullable = false)
+    @Builder.Default
+    private Integer ocupacion = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recinto_id")
     @JsonIgnore

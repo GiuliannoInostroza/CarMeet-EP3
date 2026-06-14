@@ -15,6 +15,10 @@ public class Notificacion {
     private String destinatario;
     private String mensaje;
 
+    @Column(name = "leida", nullable = false)
+    @Builder.Default
+    private Boolean leida = false;
+
     @OneToMany(mappedBy = "notificacion", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Adjunto> adjuntos = new ArrayList<>();

@@ -13,6 +13,7 @@ public class Puntuacion {
     private Long id;
     
     private Long inscripcionId;
+    private Long eventoId;           // ← NUEVO: referencia al evento
     private Integer puntos;
 
     @OneToMany(mappedBy = "puntuacion", cascade = CascadeType.ALL, orphanRemoval = true)

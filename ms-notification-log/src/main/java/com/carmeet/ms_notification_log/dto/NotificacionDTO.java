@@ -17,4 +17,6 @@ public class NotificacionDTO {
 
     @Valid
     private List<AdjuntoDTO> adjuntos;
+
+    private Boolean leida;
 }

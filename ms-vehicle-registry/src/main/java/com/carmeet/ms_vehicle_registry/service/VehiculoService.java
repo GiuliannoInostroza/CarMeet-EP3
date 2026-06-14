@@ -1,6 +1,7 @@
 package com.carmeet.ms_vehicle_registry.service;
 
 import com.carmeet.ms_vehicle_registry.model.Vehiculo;
+import com.carmeet.ms_vehicle_registry.model.Mantenimiento;
 import com.carmeet.ms_vehicle_registry.repository.VehiculoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class VehiculoService {
         existente.setMarca(datosNuevos.getMarca());
         existente.setModelo(datosNuevos.getModelo());
         existente.setAnio(datosNuevos.getAnio());
-        
+
         existente.getMantenimientos().clear();
         if (datosNuevos.getMantenimientos() != null) {
             datosNuevos.getMantenimientos().forEach(m -> {
@@ -42,7 +43,7 @@ public class VehiculoService {
                 existente.getMantenimientos().add(m);
             });
         }
-        
+
         return repo.save(existente);
     }
 
@@ -51,5 +52,26 @@ public class VehiculoService {
             throw new EntityNotFoundException("Vehiculo no encontrado con id: " + id);
         }
         repo.deleteById(id);
+    }
+
+    
+    public List<Mantenimiento> listarMantenimientos(Long vehiculoId) {
+        return obtenerPorId(vehiculoId).getMantenimientos();
+    }
+
+    
+    public Vehiculo agregarMantenimiento(Long vehiculoId, Mantenimiento mantenimiento) {
+        Vehiculo vehiculo = obtenerPorId(vehiculoId);
+        mantenimiento.setVehiculo(vehiculo);
+        vehiculo.getMantenimientos().add(mantenimiento);
+        return repo.save(vehiculo);
+    }
+
+    
+    public List<Vehiculo> buscarPorModelo(String modelo) {
+        if (modelo == null || modelo.isBlank()) {
+            throw new RuntimeException("El parámetro de búsqueda no puede estar vacío");
+        }
+        return repo.findByModeloContainingIgnoreCase(modelo);
     }
 }

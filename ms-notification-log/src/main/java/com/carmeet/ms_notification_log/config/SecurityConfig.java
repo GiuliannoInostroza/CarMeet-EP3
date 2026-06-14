@@ -34,6 +34,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                     .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
@@ -70,7 +71,7 @@ public class SecurityConfig {
 
             ApiResponse<Object> res = ApiResponse.builder()
                     .success(false)
-                    .message("No autenticado o token invÃ¡lido")
+                    .message("No autenticado o token inválido")
                     .build();
 
             new ObjectMapper().writeValue(response.getOutputStream(), res);

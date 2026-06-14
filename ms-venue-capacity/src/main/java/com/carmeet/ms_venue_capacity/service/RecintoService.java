@@ -1,12 +1,15 @@
 package com.carmeet.ms_venue_capacity.service;
 
 import com.carmeet.ms_venue_capacity.model.Recinto;
+import com.carmeet.ms_venue_capacity.model.Zona;
 import com.carmeet.ms_venue_capacity.repository.RecintoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +34,10 @@ public class RecintoService {
 
     public Recinto actualizar(Long id, Recinto datosNuevos) {
         Recinto existente = obtenerPorId(id);
+        existente.setNombre(datosNuevos.getNombre());
         existente.setCapacidadMaxima(datosNuevos.getCapacidadMaxima());
         existente.setOcupacionActual(datosNuevos.getOcupacionActual());
-        
+
         existente.getZonas().clear();
         if (datosNuevos.getZonas() != null) {
             datosNuevos.getZonas().forEach(z -> {
@@ -41,7 +45,7 @@ public class RecintoService {
                 existente.getZonas().add(z);
             });
         }
-        
+
         return repo.save(existente);
     }
 
@@ -52,12 +56,42 @@ public class RecintoService {
         repo.deleteById(id);
     }
 
+    
+    public List<Zona> listarZonas(Long recintoId) {
+        return obtenerPorId(recintoId).getZonas();
+    }
+
+    
+    public Map<String, Object> consultarDisponibilidad(Long id) {
+        Recinto r = obtenerPorId(id);
+        int plazasLibres = r.getCapacidadMaxima() - r.getOcupacionActual();
+        Map<String, Object> info = new LinkedHashMap<>();
+        info.put("recintoId", r.getId());
+        info.put("nombre", r.getNombre());
+        info.put("disponible", plazasLibres > 0);
+        info.put("capacidadMaxima", r.getCapacidadMaxima());
+        info.put("ocupacionActual", r.getOcupacionActual());
+        info.put("plazasLibres", plazasLibres);
+        return info;
+    }
+
+    
     public Recinto registrarIngreso(Long id) {
         Recinto r = obtenerPorId(id);
         if (r.getOcupacionActual() >= r.getCapacidadMaxima()) {
-            throw new RuntimeException("Â¡Recinto Lleno! Capacidad mÃ¡xima alcanzada.");
+            throw new RuntimeException("¡Recinto lleno! Capacidad máxima alcanzada: " + r.getCapacidadMaxima());
         }
         r.setOcupacionActual(r.getOcupacionActual() + 1);
+        return repo.save(r);
+    }
+
+    
+    public Recinto registrarEgreso(Long id) {
+        Recinto r = obtenerPorId(id);
+        if (r.getOcupacionActual() <= 0) {
+            throw new RuntimeException("La ocupación del recinto ya es 0, no se puede registrar egreso.");
+        }
+        r.setOcupacionActual(r.getOcupacionActual() - 1);
         return repo.save(r);
     }
 }

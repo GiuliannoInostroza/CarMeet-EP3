@@ -16,8 +16,8 @@ El proyecto cuenta con 12 microservicios en total (10 de negocio + 2 de infraest
 
 | Servicio | Puerto | URL Swagger |
 |---|---|---|
-| ms-eureka | 8761 | none (es el registro de servicios) |
-| ms-gateway | 8777 | none (centraliza las rutas) |
+| ms-eureka | 8761 | ninguna (es el registro de servicios) |
+| ms-gateway | 8777 | ninguna (centraliza las rutas) |
 
 ### Negocio
 

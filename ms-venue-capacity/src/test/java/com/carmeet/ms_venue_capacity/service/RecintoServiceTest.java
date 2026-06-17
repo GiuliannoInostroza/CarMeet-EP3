@@ -99,6 +99,19 @@ public class RecintoServiceTest {
         verify(repo, times(1)).save(r);
     }
 
+    @Test
+    void guardar_CuandoZonasEsNulo_DebeGuardarSinModificarZonas() {
+        Recinto r = Recinto.builder().nombre("Autodromo").zonas(null).build();
+        Recinto guardado = Recinto.builder().id(1L).nombre("Autodromo").zonas(null).build();
+
+        when(repo.save(r)).thenReturn(guardado);
+
+        Recinto resultado = service.guardar(r);
+
+        assertNotNull(resultado);
+        verify(repo, times(1)).save(r);
+    }
+
     // METODO: actualizar(Long id, Recinto datosNuevos)
     @Test
     void actualizar_CuandoExisteYZonasNoEsNulo_DebeActualizarYGuardar() {
@@ -142,6 +155,21 @@ public class RecintoServiceTest {
         assertEquals(1, resultado.getZonas().size());
         assertEquals(zNew, resultado.getZonas().get(0));
         assertEquals(existente, zNew.getRecinto());
+    }
+
+    @Test
+    void actualizar_CuandoExisteYZonasEsNulo_DebeActualizarYGuardarSinNuevasZonas() {
+        Long id = 1L;
+        Recinto existente = Recinto.builder().id(id).zonas(new ArrayList<>()).build();
+        Recinto datosNuevos = Recinto.builder().nombre("New Name").zonas(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Recinto resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals("New Name", resultado.getNombre());
     }
 
     // METODO: eliminar(Long id)
@@ -217,6 +245,25 @@ public class RecintoServiceTest {
         assertEquals(100, resultado.get("capacidadMaxima"));
         assertEquals(30, resultado.get("ocupacionActual"));
         assertEquals(70, resultado.get("plazasLibres"));
+    }
+
+    @Test
+    void consultarDisponibilidad_CuandoEstaLleno_DebeRetornarDisponibleFalse() {
+        Long id = 1L;
+        Recinto r = Recinto.builder()
+                .id(id)
+                .nombre("Autodromo Lleno")
+                .capacidadMaxima(100)
+                .ocupacionActual(100)
+                .build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(r));
+
+        Map<String, Object> resultado = service.consultarDisponibilidad(id);
+
+        assertNotNull(resultado);
+        assertEquals(false, resultado.get("disponible"));
+        assertEquals(0, resultado.get("plazasLibres"));
     }
 
     // METODO: registrarIngreso(Long id)

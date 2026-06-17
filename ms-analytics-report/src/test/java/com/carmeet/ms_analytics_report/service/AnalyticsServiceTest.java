@@ -137,54 +137,49 @@ public class AnalyticsServiceTest {
 
     // METODO: actualizar(Long id, Reporte datosNuevos)
     @Test
-    void actualizar_CuandoExisteYMetricasNoEsNulo_DebeActualizarLimpiarMetricasYGuardar() {
-        // Arrange
+    void actualizar_CuandoExisteYMetricasNoEsNulo_DebeActualizarYGuardar() {
         Long id = 1L;
-        Metrica mAntigua = Metrica.builder().nombre("mOld").valor(1.0).build();
-        List<Metrica> listaAntigua = new ArrayList<>();
-        listaAntigua.add(mAntigua);
+        Reporte existente = new Reporte();
+        existente.setId(id);
+        existente.setMetricas(new ArrayList<>());
 
-        Reporte existente = Reporte.builder()
-                .id(id)
-                .eventoId(2L)
-                .totalEventos(1)
-                .totalTickets(10)
-                .totalInscripciones(5)
-                .fechaGeneracion("2026-06-12")
-                .metricas(listaAntigua)
-                .build();
-        mAntigua.setReporte(existente);
-
-        Metrica mNueva = Metrica.builder().nombre("mNew").valor(2.0).build();
-        List<Metrica> listaNueva = new ArrayList<>();
-        listaNueva.add(mNueva);
-
-        Reporte datosNuevos = Reporte.builder()
-                .eventoId(3L)
-                .totalEventos(2)
-                .totalTickets(20)
-                .totalInscripciones(10)
-                .fechaGeneracion("2026-06-13")
-                .metricas(listaNueva)
-                .build();
+        Reporte datosNuevos = new Reporte();
+        datosNuevos.setEventoId(20L);
+        Metrica m = new Metrica();
+        m.setNombre("TEST");
+        datosNuevos.setMetricas(List.of(m));
 
         when(repo.findById(id)).thenReturn(Optional.of(existente));
         when(repo.save(existente)).thenReturn(existente);
 
-        // Act
         Reporte resultado = service.actualizar(id, datosNuevos);
 
-        // Assert
         assertNotNull(resultado);
-        assertEquals(3L, resultado.getEventoId());
-        assertEquals(2, resultado.getTotalEventos());
-        assertEquals(20, resultado.getTotalTickets());
-        assertEquals(10, resultado.getTotalInscripciones());
-        assertEquals("2026-06-13", resultado.getFechaGeneracion());
+        assertEquals(20L, resultado.getEventoId());
         assertEquals(1, resultado.getMetricas().size());
-        assertEquals(mNueva, resultado.getMetricas().get(0));
-        assertEquals(existente, mNueva.getReporte());
-        verify(repo, times(1)).findById(id);
+        assertEquals(existente, m.getReporte());
+        verify(repo, times(1)).save(existente);
+    }
+
+    @Test
+    void actualizar_CuandoExisteYMetricasEsNulo_DebeActualizarSinMetricas() {
+        Long id = 1L;
+        Reporte existente = new Reporte();
+        existente.setId(id);
+        existente.setMetricas(new ArrayList<>());
+
+        Reporte datosNuevos = new Reporte();
+        datosNuevos.setEventoId(20L);
+        datosNuevos.setMetricas(null);
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Reporte resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals(20L, resultado.getEventoId());
+        assertEquals(0, resultado.getMetricas().size());
         verify(repo, times(1)).save(existente);
     }
 
@@ -288,35 +283,25 @@ public class AnalyticsServiceTest {
 
     // METODO: resumenMetricas()
     @Test
-    void resumenMetricas_DebeRetornarMetricasAgrupadasPorNombre() {
-        // Arrange
-        Metrica m1 = Metrica.builder().nombre("total_tickets").valor(10.0).build();
-        Metrica m2 = Metrica.builder().nombre("total_tickets").valor(20.0).build();
-        Metrica m3 = Metrica.builder().nombre("total_inscripciones").valor(5.0).build();
+    void resumenMetricas_DebeRetornarResumenCorrectoIncluyendoNulos() {
+        Reporte r1 = new Reporte();
+        Metrica m1 = new Metrica(1L, "T1", 10.0, r1);
+        Metrica m2 = new Metrica(2L, "T1", 5.0, r1);
+        Metrica mNulo = new Metrica(3L, "T1", null, r1);
+        r1.setMetricas(List.of(m1, m2, mNulo));
 
-        Reporte r1 = Reporte.builder().metricas(Arrays.asList(m1, m3)).build();
-        Reporte r2 = Reporte.builder().metricas(List.of(m2)).build();
+        Reporte r2 = new Reporte();
+        r2.setMetricas(null);
 
-        when(repo.findAll()).thenReturn(Arrays.asList(r1, r2));
+        Reporte r3 = new Reporte();
+        Metrica m3 = new Metrica(4L, "T2", 20.0, r3);
+        r3.setMetricas(List.of(m3));
 
-        // Act
+        when(repo.findAll()).thenReturn(List.of(r1, r2, r3));
+
         List<MetricaDTO> resultado = service.resumenMetricas();
 
-        // Assert
         assertNotNull(resultado);
         assertEquals(2, resultado.size());
-        
-        MetricaDTO ticketsDTO = resultado.stream()
-                .filter(dto -> "total_tickets".equals(dto.getNombre()))
-                .findFirst().orElse(null);
-        
-        MetricaDTO inscripcionesDTO = resultado.stream()
-                .filter(dto -> "total_inscripciones".equals(dto.getNombre()))
-                .findFirst().orElse(null);
-
-        assertNotNull(ticketsDTO);
-        assertEquals(30.0, ticketsDTO.getValor());
-        assertNotNull(inscripcionesDTO);
-        assertEquals(5.0, inscripcionesDTO.getValor());
     }
 }

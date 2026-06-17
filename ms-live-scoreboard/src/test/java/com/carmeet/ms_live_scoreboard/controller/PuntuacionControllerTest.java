@@ -2,6 +2,8 @@ package com.carmeet.ms_live_scoreboard.controller;
 
 import com.carmeet.ms_live_scoreboard.dto.PuntuacionDTO;
 import com.carmeet.ms_live_scoreboard.model.Puntuacion;
+import com.carmeet.ms_live_scoreboard.dto.DetallePuntuacionDTO;
+import com.carmeet.ms_live_scoreboard.model.DetallePuntuacion;
 import com.carmeet.ms_live_scoreboard.service.PuntuacionService;
 import com.carmeet.ms_live_scoreboard.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,9 +69,17 @@ class PuntuacionControllerTest {
         PuntuacionDTO reqDto = new PuntuacionDTO();
         reqDto.setInscripcionId(2L);
         reqDto.setEventoId(3L);
-        reqDto.setPuntos(85);
+        reqDto.setPuntos(95);
 
-        Puntuacion p = new Puntuacion(1L, 2L, 3L, 85, new ArrayList<>());
+        DetallePuntuacionDTO dDto = new DetallePuntuacionDTO();
+        dDto.setCategoria("Estilo");
+        dDto.setPuntosAsignados(20);
+        reqDto.setDetalles(List.of(dDto));
+
+        Puntuacion p = new Puntuacion(1L, 2L, 3L, 95, new ArrayList<>());
+        DetallePuntuacion dObj = new DetallePuntuacion(10L, "Estilo", 20, "Comentario", p);
+        p.getDetalles().add(dObj);
+        
         when(service.guardar(any(Puntuacion.class), any())).thenReturn(p);
 
         mockMvc.perform(post("/api/v1/puntuaciones")
@@ -78,7 +88,8 @@ class PuntuacionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Puntuación registrada"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.detalles[0].categoria").value("Estilo"));
     }
 
     @Test
@@ -88,7 +99,7 @@ class PuntuacionControllerTest {
         reqDto.setEventoId(3L);
         reqDto.setPuntos(90);
 
-        Puntuacion p = new Puntuacion(1L, 2L, 3L, 90, new ArrayList<>());
+        Puntuacion p = new Puntuacion(1L, 2L, 3L, 90, null);
         when(service.actualizar(eq(1L), any(Puntuacion.class))).thenReturn(p);
 
         mockMvc.perform(put("/api/v1/puntuaciones/1")

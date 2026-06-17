@@ -71,7 +71,14 @@ class VehiculoControllerTest {
         reqDto.setModelo("Supra");
         reqDto.setAnio(2020);
 
+        MantenimientoDTO mDto = new MantenimientoDTO();
+        mDto.setDescripcion("Cambio de aceite");
+        reqDto.setMantenimientos(List.of(mDto));
+
         Vehiculo v = new Vehiculo(1L, "Toyota", "Supra", 2020, new ArrayList<>());
+        Mantenimiento mObj = new Mantenimiento(10L, "Cambio de aceite", v);
+        v.getMantenimientos().add(mObj);
+        
         when(service.guardar(any(Vehiculo.class))).thenReturn(v);
 
         mockMvc.perform(post("/api/v1/vehiculos")
@@ -80,7 +87,8 @@ class VehiculoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Creado"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.mantenimientos[0].descripcion").value("Cambio de aceite"));
     }
 
     @Test
@@ -90,7 +98,7 @@ class VehiculoControllerTest {
         reqDto.setModelo("Supra Updated");
         reqDto.setAnio(2020);
 
-        Vehiculo v = new Vehiculo(1L, "Toyota", "Supra Updated", 2020, new ArrayList<>());
+        Vehiculo v = new Vehiculo(1L, "Toyota", "Supra Updated", 2020, null);
         when(service.actualizar(eq(1L), any(Vehiculo.class))).thenReturn(v);
 
         mockMvc.perform(put("/api/v1/vehiculos/1")

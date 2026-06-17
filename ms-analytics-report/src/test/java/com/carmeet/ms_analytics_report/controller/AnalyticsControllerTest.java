@@ -1,7 +1,9 @@
 package com.carmeet.ms_analytics_report.controller;
 
 import com.carmeet.ms_analytics_report.dto.ReporteDTO;
+import com.carmeet.ms_analytics_report.dto.MetricaDTO;
 import com.carmeet.ms_analytics_report.model.Reporte;
+import com.carmeet.ms_analytics_report.model.Metrica;
 import com.carmeet.ms_analytics_report.service.AnalyticsService;
 import com.carmeet.ms_analytics_report.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +31,8 @@ class AnalyticsControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     @MockitoBean
     private AnalyticsService service;
@@ -72,7 +75,15 @@ class AnalyticsControllerTest {
         reqDto.setTotalInscripciones(15);
         reqDto.setFechaGeneracion(LocalDate.now().toString());
 
+        MetricaDTO mDto = new MetricaDTO();
+        mDto.setNombre("TEST_METRIC");
+        mDto.setValor(100.0);
+        reqDto.setMetricas(List.of(mDto));
+
         Reporte r = new Reporte(1L, 10L, 5, 20, 15, LocalDate.now().toString(), new ArrayList<>());
+        Metrica m = new Metrica(100L, "TEST_METRIC", 100.0, r);
+        r.getMetricas().add(m);
+
         when(service.guardar(any(Reporte.class))).thenReturn(r);
 
         mockMvc.perform(post("/api/v1/reportes")
@@ -81,7 +92,8 @@ class AnalyticsControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Creado"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.metricas[0].nombre").value("TEST_METRIC"));
     }
 
     @Test
@@ -93,7 +105,7 @@ class AnalyticsControllerTest {
         reqDto.setTotalInscripciones(15);
         reqDto.setFechaGeneracion(LocalDate.now().toString());
 
-        Reporte r = new Reporte(1L, 10L, 5, 20, 15, LocalDate.now().toString(), new ArrayList<>());
+        Reporte r = new Reporte(1L, 10L, 5, 20, 15, LocalDate.now().toString(), null);
         when(service.actualizar(eq(1L), any(Reporte.class))).thenReturn(r);
 
         mockMvc.perform(put("/api/v1/reportes/1")
@@ -129,11 +141,16 @@ class AnalyticsControllerTest {
 
     @Test
     void debeObtenerResumenMetricas() throws Exception {
-        when(service.resumenMetricas()).thenReturn(List.of());
+        MetricaDTO mDto = new MetricaDTO();
+        mDto.setNombre("TOTAL");
+        mDto.setValor(500.0);
+
+        when(service.resumenMetricas()).thenReturn(List.of(mDto));
 
         mockMvc.perform(get("/api/v1/reportes/metricas/resumen"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Resumen de métricas"));
+                .andExpect(jsonPath("$.message").value("Resumen de métricas"))
+                .andExpect(jsonPath("$.data.content[0].nombre").value("TOTAL"));
     }
 }

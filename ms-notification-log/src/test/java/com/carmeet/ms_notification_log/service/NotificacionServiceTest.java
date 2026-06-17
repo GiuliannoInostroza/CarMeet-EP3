@@ -141,6 +141,46 @@ public class NotificacionServiceTest {
         assertEquals(existente, aNew.getNotificacion());
     }
 
+    @Test
+    void actualizar_CuandoExisteYAdjuntosEsNulo_DebeActualizarSinAdjuntos() {
+        Long id = 1L;
+        Notificacion existente = new Notificacion();
+        existente.setId(id);
+        existente.setAdjuntos(new ArrayList<>());
+
+        Notificacion datosNuevos = new Notificacion();
+        datosNuevos.setDestinatario("new");
+        datosNuevos.setMensaje("new message");
+        datosNuevos.setAdjuntos(null);
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Notificacion resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals("new", resultado.getDestinatario());
+        assertEquals(0, resultado.getAdjuntos().size());
+        verify(repo, times(1)).save(existente);
+    }
+
+    @Test
+    void guardar_CuandoAdjuntosEsNulo_DebeGuardarExitosamente() {
+        Notificacion n = Notificacion.builder()
+                .destinatario("test@test.com")
+                .mensaje("msg")
+                .adjuntos(null)
+                .build();
+
+        when(repo.save(n)).thenReturn(n);
+
+        Notificacion resultado = service.guardar(n);
+
+        assertNotNull(resultado);
+        assertFalse(resultado.getLeida());
+        verify(repo, times(1)).save(n);
+    }
+
     // METODO: eliminar(Long id)
     @Test
     void eliminar_CuandoExiste_DebeEliminar() {
@@ -189,22 +229,25 @@ public class NotificacionServiceTest {
     void enviar_CuandoFaltaDestinatarioOMensaje_DebeLanzarRuntimeException() {
         // Arrange
         Notificacion n1 = Notificacion.builder().destinatario(null).mensaje("hola").build();
-        Notificacion n2 = Notificacion.builder().destinatario("john").mensaje("  ").build();
+        Notificacion n2 = Notificacion.builder().destinatario("   ").mensaje("hola").build();
+        Notificacion n3 = Notificacion.builder().destinatario("john").mensaje(null).build();
+        Notificacion n4 = Notificacion.builder().destinatario("john").mensaje("  ").build();
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> {
-            service.enviar(n1);
-        });
-        assertThrows(RuntimeException.class, () -> {
-            service.enviar(n2);
-        });
+        assertThrows(RuntimeException.class, () -> service.enviar(n1));
+        assertThrows(RuntimeException.class, () -> service.enviar(n2));
+        assertThrows(RuntimeException.class, () -> service.enviar(n3));
+        assertThrows(RuntimeException.class, () -> service.enviar(n4));
     }
 
     @Test
-    void enviar_CuandoDatosValidos_DebeMarcarNoLeidaGuardarYRetornar() {
+    void enviar_DebeGuardarYRetornarNotificacionConLeidaFalso() {
         // Arrange
-        Notificacion n = Notificacion.builder().destinatario("john").mensaje("hola").build();
-        when(repo.save(n)).thenReturn(n);
+        Notificacion n = Notificacion.builder()
+                .destinatario("envio@test.com")
+                .mensaje("Hola mundo")
+                .build();
+        when(repo.save(any(Notificacion.class))).thenAnswer(i -> i.getArgument(0));
 
         // Act
         Notificacion resultado = service.enviar(n);
@@ -212,7 +255,24 @@ public class NotificacionServiceTest {
         // Assert
         assertNotNull(resultado);
         assertFalse(resultado.getLeida());
+        assertEquals("envio@test.com", resultado.getDestinatario());
         verify(repo, times(1)).save(n);
+    }
+
+    @Test
+    void enviar_DestinatarioVacio_DebeLanzarExcepcion() {
+        Notificacion n = new Notificacion();
+        n.setMensaje("Hola");
+
+        assertThrows(RuntimeException.class, () -> service.enviar(n));
+    }
+
+    @Test
+    void enviar_MensajeVacio_DebeLanzarExcepcion() {
+        Notificacion n = new Notificacion();
+        n.setDestinatario("test@test.com");
+
+        assertThrows(RuntimeException.class, () -> service.enviar(n));
     }
 
     // METODO: marcarLeida(Long id)

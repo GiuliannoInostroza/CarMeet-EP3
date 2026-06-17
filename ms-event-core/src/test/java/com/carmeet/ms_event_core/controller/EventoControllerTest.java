@@ -3,6 +3,7 @@ package com.carmeet.ms_event_core.controller;
 import com.carmeet.ms_event_core.dto.EventoDTO;
 import com.carmeet.ms_event_core.model.Evento;
 import com.carmeet.ms_event_core.model.Patrocinador;
+import com.carmeet.ms_event_core.dto.PatrocinadorDTO;
 import com.carmeet.ms_event_core.service.EventoService;
 import com.carmeet.ms_event_core.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,8 +72,16 @@ class EventoControllerTest {
         reqDto.setNombre("Exposition Car");
         reqDto.setFecha(LocalDate.now().toString());
         reqDto.setUbicacion("Santiago");
+        
+        PatrocinadorDTO pDto = new PatrocinadorDTO();
+        pDto.setNombre("Brand A");
+        pDto.setNivel("Gold");
+        reqDto.setPatrocinadores(List.of(pDto));
 
         Evento ev = new Evento(1L, "Exposition Car", LocalDate.now().toString(), "Santiago", new ArrayList<>());
+        Patrocinador pObj = new Patrocinador(10L, "Brand A", "Gold", ev);
+        ev.getPatrocinadores().add(pObj);
+        
         when(service.guardar(any(Evento.class))).thenReturn(ev);
 
         mockMvc.perform(post("/api/v1/eventos")
@@ -81,7 +90,8 @@ class EventoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Creado"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.patrocinadores[0].nombre").value("Brand A"));
     }
 
     @Test
@@ -91,7 +101,7 @@ class EventoControllerTest {
         reqDto.setFecha(LocalDate.now().toString());
         reqDto.setUbicacion("Santiago");
 
-        Evento ev = new Evento(1L, "Exposition Car Updated", LocalDate.now().toString(), "Santiago", new ArrayList<>());
+        Evento ev = new Evento(1L, "Exposition Car Updated", LocalDate.now().toString(), "Santiago", null);
         when(service.actualizar(eq(1L), any(Evento.class))).thenReturn(ev);
 
         mockMvc.perform(put("/api/v1/eventos/1")

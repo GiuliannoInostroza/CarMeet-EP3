@@ -1,6 +1,8 @@
 package com.carmeet.ms_ticketing.controller;
 
 import com.carmeet.ms_ticketing.dto.TicketDTO;
+import com.carmeet.ms_ticketing.dto.BeneficioDTO;
+import com.carmeet.ms_ticketing.model.Beneficio;
 import com.carmeet.ms_ticketing.model.Ticket;
 import com.carmeet.ms_ticketing.service.TicketService;
 import com.carmeet.ms_ticketing.security.JwtUtil;
@@ -72,7 +74,14 @@ class TicketControllerTest {
         reqDto.setCategoria("VIP");
         reqDto.setUsername("user1");
 
+        BeneficioDTO bDto = new BeneficioDTO();
+        bDto.setNombre("Acceso VIP");
+        reqDto.setBeneficios(List.of(bDto));
+
         Ticket t = new Ticket(1L, 10L, 25.0, "VIP", "PENDIENTE", "user1", new ArrayList<>());
+        Beneficio bObj = new Beneficio(100L, "Acceso VIP", "Desc", t);
+        t.getBeneficios().add(bObj);
+        
         when(service.guardar(any(Ticket.class), any())).thenReturn(t);
 
         mockMvc.perform(post("/api/v1/tickets")
@@ -81,7 +90,8 @@ class TicketControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Ticket creado"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.beneficios[0].nombre").value("Acceso VIP"));
     }
 
     @Test
@@ -91,8 +101,11 @@ class TicketControllerTest {
         reqDto.setPrecio(30.0);
         reqDto.setCategoria("VIP");
         reqDto.setUsername("user1");
+        reqDto.setEstado("PAGADO");
+        reqDto.setBeneficios(null);
 
-        Ticket t = new Ticket(1L, 10L, 30.0, "VIP", "PENDIENTE", "user1", new ArrayList<>());
+        Ticket t = new Ticket(1L, 10L, 30.0, "VIP", "PAGADO", "user1", null);
+
         when(service.actualizar(eq(1L), any(Ticket.class))).thenReturn(t);
 
         mockMvc.perform(put("/api/v1/tickets/1")
@@ -161,6 +174,18 @@ class TicketControllerTest {
         mockMvc.perform(patch("/api/v1/tickets/1/pagar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Pago procesado exitosamente"))
+                .andExpect(jsonPath("$.data.estado").value("PAGADO"));
+    }
+
+    @Test
+    void debePagarTicketSinBody() throws Exception {
+        Ticket t = new Ticket(1L, 10L, 25.0, "VIP", "PAGADO", "user1", new ArrayList<>());
+        when(service.pagar(eq(1L), eq("TARJETA"), any())).thenReturn(t);
+
+        mockMvc.perform(patch("/api/v1/tickets/1/pagar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Pago procesado exitosamente"))

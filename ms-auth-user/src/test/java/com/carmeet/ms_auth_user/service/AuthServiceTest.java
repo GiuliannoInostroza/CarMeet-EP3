@@ -112,6 +112,16 @@ public class AuthServiceTest {
         // Assert
         assertNotNull(response);
         assertEquals("ROLE_ESPECTADOR", response.getRole());
+
+        // Also test ROLE_USER
+        req.setRole("ROLE_USER");
+        AuthResponse response2 = service.register(req);
+        assertEquals("ROLE_ESPECTADOR", response2.getRole());
+        
+        // Also test empty role
+        req.setRole("   ");
+        AuthResponse response3 = service.register(req);
+        assertEquals("ROLE_ESPECTADOR", response3.getRole());
     }
 
     @Test
@@ -185,6 +195,12 @@ public class AuthServiceTest {
         when(jwtUtil.esValido(rToken)).thenReturn(false);
 
         // Act & Assert
+        assertThrows(RuntimeException.class, () -> {
+            service.refresh(rToken);
+        });
+        
+        when(jwtUtil.esValido(rToken)).thenReturn(true);
+        when(jwtUtil.esRefreshToken(rToken)).thenReturn(false);
         assertThrows(RuntimeException.class, () -> {
             service.refresh(rToken);
         });
@@ -272,6 +288,16 @@ public class AuthServiceTest {
         verify(usuarioRepo, times(1)).save(user);
     }
 
+    @Test
+    void degradarAUser_CuandoNoExiste_DebeLanzarRuntimeException() {
+        String username = "john";
+        when(usuarioRepo.findByUsername(username)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> {
+            service.degradarAUser(username);
+        });
+    }
+
     // METODO: obtenerPorUsername(String username)
     @Test
     void obtenerPorUsername_CuandoExiste_DebeRetornarUsuario() {
@@ -288,6 +314,16 @@ public class AuthServiceTest {
         // Assert
         assertNotNull(resultado);
         assertEquals(username, resultado.getUsername());
+    }
+
+    @Test
+    void obtenerPorUsername_CuandoNoExiste_DebeLanzarRuntimeException() {
+        String username = "john";
+        when(usuarioRepo.findByUsername(username)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> {
+            service.obtenerPorUsername(username);
+        });
     }
 
     // METODO: listarUsuarios()

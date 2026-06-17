@@ -4,6 +4,8 @@ import com.carmeet.ms_competition_reg.dto.InscripcionDTO;
 import com.carmeet.ms_competition_reg.model.Inscripcion;
 import com.carmeet.ms_competition_reg.service.InscripcionService;
 import com.carmeet.ms_competition_reg.security.JwtUtil;
+import com.carmeet.ms_competition_reg.dto.RequisitoDTO;
+import com.carmeet.ms_competition_reg.model.Requisito;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,8 @@ class InscripcionControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     @MockitoBean
     private InscripcionService service;
@@ -71,7 +74,18 @@ class InscripcionControllerTest {
         reqDto.setCategoria("Tuning");
         reqDto.setUsername("juanp");
 
+        RequisitoDTO reqReqDto = new RequisitoDTO();
+        reqReqDto.setNombre("Req 1");
+        reqReqDto.setDescripcion("Desc 1");
+        reqDto.setRequisitos(List.of(reqReqDto));
+
         Inscripcion i = new Inscripcion(1L, 2L, 3L, "Juan Perez", "Tuning", "juanp", "PENDIENTE", new ArrayList<>());
+        Requisito reqObj = new Requisito();
+        reqObj.setId(1L);
+        reqObj.setNombre("Req 1");
+        reqObj.setDescripcion("Desc 1");
+        i.getRequisitos().add(reqObj);
+
         when(service.guardar(any(Inscripcion.class), any())).thenReturn(i);
 
         mockMvc.perform(post("/api/v1/inscripciones")
@@ -80,7 +94,8 @@ class InscripcionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Inscripción creada"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.requisitos[0].nombre").value("Req 1"));
     }
 
     @Test
@@ -91,8 +106,11 @@ class InscripcionControllerTest {
         reqDto.setParticipante("Juan Perez");
         reqDto.setCategoria("Tuning");
         reqDto.setUsername("juanp");
+        reqDto.setEstado("ACTIVA");
+        reqDto.setRequisitos(null);
 
-        Inscripcion i = new Inscripcion(1L, 2L, 3L, "Juan Perez", "Tuning", "juanp", "PENDIENTE", new ArrayList<>());
+        Inscripcion i = new Inscripcion(1L, 2L, 3L, "Juan Perez", "Tuning", "juanp", "ACTIVA", null);
+
         when(service.actualizar(eq(1L), any(Inscripcion.class))).thenReturn(i);
 
         mockMvc.perform(put("/api/v1/inscripciones/1")

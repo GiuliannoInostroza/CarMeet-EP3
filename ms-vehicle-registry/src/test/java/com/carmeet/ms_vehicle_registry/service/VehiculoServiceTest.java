@@ -98,6 +98,19 @@ public class VehiculoServiceTest {
         verify(repo, times(1)).save(v);
     }
 
+    @Test
+    void guardar_CuandoMantenimientosEsNulo_DebeGuardarSinModificarMantenimientos() {
+        Vehiculo v = Vehiculo.builder().marca("Toyota").mantenimientos(null).build();
+        Vehiculo guardado = Vehiculo.builder().id(1L).marca("Toyota").mantenimientos(null).build();
+
+        when(repo.save(v)).thenReturn(guardado);
+
+        Vehiculo resultado = service.guardar(v);
+
+        assertNotNull(resultado);
+        verify(repo, times(1)).save(v);
+    }
+
     // METODO: actualizar(Long id, Vehiculo datosNuevos)
     @Test
     void actualizar_CuandoExisteYMantenimientosNoEsNulo_DebeActualizarYGuardar() {
@@ -141,6 +154,21 @@ public class VehiculoServiceTest {
         assertEquals(1, resultado.getMantenimientos().size());
         assertEquals(mNew, resultado.getMantenimientos().get(0));
         assertEquals(existente, mNew.getVehiculo());
+    }
+
+    @Test
+    void actualizar_CuandoExisteYMantenimientosEsNulo_DebeActualizarYGuardarSinNuevosMantenimientos() {
+        Long id = 1L;
+        Vehiculo existente = Vehiculo.builder().id(id).mantenimientos(new ArrayList<>()).build();
+        Vehiculo datosNuevos = Vehiculo.builder().marca("Toyota").mantenimientos(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Vehiculo resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals("Toyota", resultado.getMarca());
     }
 
     // METODO: eliminar(Long id)

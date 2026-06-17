@@ -98,6 +98,19 @@ public class PagoServiceTest {
         verify(repo, times(1)).save(p);
     }
 
+    @Test
+    void guardar_CuandoLogsEsNulo_DebeGuardarSinModificarLogs() {
+        Pago p = Pago.builder().monto(50.0).logs(null).build();
+        Pago guardado = Pago.builder().id(1L).monto(50.0).logs(null).build();
+
+        when(repo.save(p)).thenReturn(guardado);
+
+        Pago resultado = service.guardar(p);
+
+        assertNotNull(resultado);
+        verify(repo, times(1)).save(p);
+    }
+
     // METODO: actualizar(Long id, Pago datosNuevos)
     @Test
     void actualizar_CuandoExisteYLogsNoEsNulo_DebeActualizarYGuardar() {
@@ -141,6 +154,21 @@ public class PagoServiceTest {
         assertEquals(1, resultado.getLogs().size());
         assertEquals(lNew, resultado.getLogs().get(0));
         assertEquals(existente, lNew.getPago());
+    }
+
+    @Test
+    void actualizar_CuandoExisteYLogsEsNulo_DebeActualizarYGuardarSinNuevosLogs() {
+        Long id = 1L;
+        Pago existente = Pago.builder().id(id).logs(new ArrayList<>()).build();
+        Pago datosNuevos = Pago.builder().ticketId(6L).logs(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Pago resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals(6L, resultado.getTicketId());
     }
 
     // METODO: eliminar(Long id)
@@ -216,21 +244,32 @@ public class PagoServiceTest {
     @Test
     void procesarPago_DebeAgregarLogDeTransaccionYGuardar() {
         // Arrange
-        Pago p = Pago.builder().monto(100.0).logs(new ArrayList<>()).build();
         when(repo.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act & Assert
-        try {
-            Pago resultado = service.procesarPago(p);
-            assertNotNull(resultado);
-            assertEquals(1, resultado.getLogs().size());
-            assertEquals("APROBADO", resultado.getLogs().get(0).getEstado());
-        } catch (RuntimeException e) {
-            assertTrue(e.getMessage().contains("Pago RECHAZADO"));
-            assertEquals(1, p.getLogs().size());
-            assertEquals("RECHAZADO", p.getLogs().get(0).getEstado());
+        boolean hitApproved = false;
+        boolean hitRejected = false;
+
+        // Loop a few times to probabilistically hit both random branches
+        for (int i = 0; i < 50; i++) {
+            Pago p = Pago.builder().monto(100.0).logs(new ArrayList<>()).build();
+            try {
+                Pago resultado = service.procesarPago(p);
+                assertNotNull(resultado);
+                assertEquals(1, resultado.getLogs().size());
+                assertEquals("APROBADO", resultado.getLogs().get(0).getEstado());
+                hitApproved = true;
+            } catch (RuntimeException e) {
+                assertTrue(e.getMessage().contains("Pago RECHAZADO"));
+                assertEquals(1, p.getLogs().size());
+                assertEquals("RECHAZADO", p.getLogs().get(0).getEstado());
+                hitRejected = true;
+            }
+            if (hitApproved && hitRejected) {
+                break;
+            }
         }
-        verify(repo, times(1)).save(p);
+        assertTrue(hitApproved && hitRejected, "Deberia haber probado ambos casos probabilísticamente");
+        verify(repo, atLeastOnce()).save(any(Pago.class));
     }
 
     // METODO: obtenerLogs(Long pagoId)

@@ -114,6 +114,21 @@ public class InscripcionServiceTest {
         verify(repo, times(1)).save(insc);
     }
 
+    @Test
+    void guardar_CuandoRequisitosEsNulo_DebeGuardarSinModificarRequisitos() {
+        String token = "Bearer token";
+        Inscripcion insc = Inscripcion.builder().eventoId(10L).requisitos(null).build();
+        Inscripcion guardada = Inscripcion.builder().id(1L).eventoId(10L).estado("PENDIENTE").requisitos(null).build();
+
+        doNothing().when(eventoClient).validarEvento(10L, token);
+        when(repo.save(insc)).thenReturn(guardada);
+
+        Inscripcion resultado = service.guardar(insc, token);
+
+        assertNotNull(resultado);
+        assertEquals("PENDIENTE", insc.getEstado());
+    }
+
     // METODO: actualizar(Long id, Inscripcion datosNuevos)
     @Test
     void actualizar_CuandoExisteYRequisitosNoEsNulo_DebeActualizarYGuardar() {
@@ -163,6 +178,21 @@ public class InscripcionServiceTest {
         assertEquals(1, resultado.getRequisitos().size());
         assertEquals(rNew, resultado.getRequisitos().get(0));
         assertEquals(existente, rNew.getInscripcion());
+    }
+
+    @Test
+    void actualizar_CuandoExisteYRequisitosEsNulo_DebeActualizarYGuardarSinModificarNuevosRequisitos() {
+        Long id = 1L;
+        Inscripcion existente = Inscripcion.builder().id(id).requisitos(new ArrayList<>()).build();
+        Inscripcion datosNuevos = Inscripcion.builder().vehiculoId(4L).requisitos(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Inscripcion resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals(4L, resultado.getVehiculoId());
     }
 
     // METODO: eliminar(Long id)
@@ -253,6 +283,23 @@ public class InscripcionServiceTest {
     }
 
     @Test
+    void aprobar_CuandoEsPendienteYVehiculoYUsernameSonNulos_DebeAprobarSinNotificarNiValidar() {
+        Long id = 1L;
+        String token = "Bearer token";
+        Inscripcion insc = Inscripcion.builder().id(id).estado("PENDIENTE").vehiculoId(null).username(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(insc));
+        when(repo.save(insc)).thenReturn(insc);
+
+        Inscripcion resultado = service.aprobar(id, token);
+
+        assertNotNull(resultado);
+        assertEquals("APROBADA", resultado.getEstado());
+        verify(vehiculoClient, never()).validarVehiculo(anyLong(), anyString());
+        verify(notificacionClient, never()).enviar(anyString(), anyString(), anyString());
+    }
+
+    @Test
     void aprobar_CuandoNoEstaPendiente_DebeLanzarRuntimeException() {
         // Arrange
         Long id = 1L;
@@ -289,6 +336,22 @@ public class InscripcionServiceTest {
         assertNotNull(resultado);
         assertEquals("RECHAZADA", resultado.getEstado());
         verify(notificacionClient, times(1)).enviar(eq("john"), anyString(), eq(token));
+    }
+
+    @Test
+    void rechazar_CuandoEsPendienteYUsernameEsNulo_DebeRechazarSinNotificar() {
+        Long id = 1L;
+        String token = "Bearer token";
+        Inscripcion insc = Inscripcion.builder().id(id).estado("PENDIENTE").username(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(insc));
+        when(repo.save(insc)).thenReturn(insc);
+
+        Inscripcion resultado = service.rechazar(id, token);
+
+        assertNotNull(resultado);
+        assertEquals("RECHAZADA", resultado.getEstado());
+        verify(notificacionClient, never()).enviar(anyString(), anyString(), anyString());
     }
 
     @Test

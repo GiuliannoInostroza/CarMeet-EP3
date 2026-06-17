@@ -105,6 +105,21 @@ public class PuntuacionServiceTest {
         verify(repo, times(1)).save(p);
     }
 
+    @Test
+    void guardar_CuandoDetallesEsNulo_DebeGuardarSinModificarDetalles() {
+        String token = "Bearer token";
+        Puntuacion p = Puntuacion.builder().inscripcionId(10L).detalles(null).build();
+        Puntuacion guardada = Puntuacion.builder().id(1L).inscripcionId(10L).detalles(null).build();
+
+        doNothing().when(competitionClient).validarInscripcion(10L, token);
+        when(repo.save(p)).thenReturn(guardada);
+
+        Puntuacion resultado = service.guardar(p, token);
+
+        assertNotNull(resultado);
+        verify(repo, times(1)).save(p);
+    }
+
     // METODO: actualizar(Long id, Puntuacion datosNuevos)
     @Test
     void actualizar_CuandoExisteYDetallesNoEsNulo_DebeActualizarYGuardar() {
@@ -148,6 +163,21 @@ public class PuntuacionServiceTest {
         assertEquals(1, resultado.getDetalles().size());
         assertEquals(dNew, resultado.getDetalles().get(0));
         assertEquals(existente, dNew.getPuntuacion());
+    }
+
+    @Test
+    void actualizar_CuandoExisteYDetallesEsNulo_DebeActualizarYGuardarSinNuevosDetalles() {
+        Long id = 1L;
+        Puntuacion existente = Puntuacion.builder().id(id).detalles(new ArrayList<>()).build();
+        Puntuacion datosNuevos = Puntuacion.builder().puntos(75).detalles(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Puntuacion resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals(Integer.valueOf(75), resultado.getPuntos());
     }
 
     // METODO: eliminar(Long id)

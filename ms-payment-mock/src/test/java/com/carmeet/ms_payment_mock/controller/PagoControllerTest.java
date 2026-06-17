@@ -1,6 +1,7 @@
 package com.carmeet.ms_payment_mock.controller;
 
 import com.carmeet.ms_payment_mock.dto.PagoDTO;
+import com.carmeet.ms_payment_mock.dto.TransaccionLogDTO;
 import com.carmeet.ms_payment_mock.model.Pago;
 import com.carmeet.ms_payment_mock.model.TransaccionLog;
 import com.carmeet.ms_payment_mock.service.PagoService;
@@ -67,11 +68,18 @@ class PagoControllerTest {
     @Test
     void debeGuardarPago() throws Exception {
         PagoDTO reqDto = new PagoDTO();
-        reqDto.setTicketId(10L);
-        reqDto.setMonto(50.0);
-        reqDto.setMetodoPago("CREDIT_CARD");
+        reqDto.setTicketId(2L);
+        reqDto.setMonto(150.0);
+        reqDto.setMetodoPago("TARJETA");
 
-        Pago p = new Pago(1L, 10L, 50.0, "CREDIT_CARD", new ArrayList<>());
+        TransaccionLogDTO lDto = new TransaccionLogDTO();
+        lDto.setEstado("APROBADO");
+        reqDto.setLogs(List.of(lDto));
+
+        Pago p = new Pago(1L, 2L, 150.0, "TARJETA", new ArrayList<>());
+        TransaccionLog lObj = new TransaccionLog(10L, "APROBADO", LocalDateTime.now(), p);
+        p.getLogs().add(lObj);
+        
         when(service.guardar(any(Pago.class))).thenReturn(p);
 
         mockMvc.perform(post("/api/v1/pagos")
@@ -80,7 +88,8 @@ class PagoControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Creado"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.logs[0].estado").value("APROBADO"));
     }
 
     @Test
@@ -90,7 +99,7 @@ class PagoControllerTest {
         reqDto.setMonto(60.0);
         reqDto.setMetodoPago("CREDIT_CARD");
 
-        Pago p = new Pago(1L, 10L, 60.0, "CREDIT_CARD", new ArrayList<>());
+        Pago p = new Pago(1L, 10L, 60.0, "CREDIT_CARD", null);
         when(service.actualizar(eq(1L), any(Pago.class))).thenReturn(p);
 
         mockMvc.perform(put("/api/v1/pagos/1")

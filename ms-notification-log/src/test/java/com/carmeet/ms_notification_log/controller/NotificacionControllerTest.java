@@ -1,7 +1,9 @@
 package com.carmeet.ms_notification_log.controller;
 
 import com.carmeet.ms_notification_log.dto.NotificacionDTO;
+import com.carmeet.ms_notification_log.dto.AdjuntoDTO;
 import com.carmeet.ms_notification_log.model.Notificacion;
+import com.carmeet.ms_notification_log.model.Adjunto;
 import com.carmeet.ms_notification_log.service.NotificacionService;
 import com.carmeet.ms_notification_log.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,7 +71,15 @@ class NotificacionControllerTest {
         reqDto.setMensaje("Hello");
         reqDto.setLeida(false);
 
+        AdjuntoDTO aDto = new AdjuntoDTO();
+        aDto.setNombreArchivo("file.txt");
+        aDto.setUrl("http://file.com");
+        reqDto.setAdjuntos(List.of(aDto));
+
         Notificacion n = new Notificacion(1L, "dest@mail.com", "Hello", false, new ArrayList<>());
+        Adjunto a = new Adjunto(10L, "file.txt", "url", "path", n);
+        n.getAdjuntos().add(a);
+        
         when(service.guardar(any(Notificacion.class))).thenReturn(n);
 
         mockMvc.perform(post("/api/v1/notificaciones")
@@ -78,7 +88,8 @@ class NotificacionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Creado"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.adjuntos[0].nombreArchivo").value("file.txt"));
     }
 
     @Test
@@ -86,9 +97,9 @@ class NotificacionControllerTest {
         NotificacionDTO reqDto = new NotificacionDTO();
         reqDto.setDestinatario("dest@mail.com");
         reqDto.setMensaje("Hello Updated");
-        reqDto.setLeida(true);
+        reqDto.setLeida(null);
 
-        Notificacion n = new Notificacion(1L, "dest@mail.com", "Hello Updated", true, new ArrayList<>());
+        Notificacion n = new Notificacion(1L, "dest@mail.com", "Hello Updated", false, null);
         when(service.actualizar(eq(1L), any(Notificacion.class))).thenReturn(n);
 
         mockMvc.perform(put("/api/v1/notificaciones/1")

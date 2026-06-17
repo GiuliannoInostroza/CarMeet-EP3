@@ -99,6 +99,19 @@ public class EventoServiceTest {
         verify(repo, times(1)).save(e);
     }
 
+    @Test
+    void guardar_CuandoPatrocinadoresEsNulo_DebeGuardarSinModificarPatrocinadores() {
+        Evento e = Evento.builder().nombre("Car Meet").patrocinadores(null).build();
+        Evento guardado = Evento.builder().id(1L).nombre("Car Meet").patrocinadores(null).build();
+
+        when(repo.save(e)).thenReturn(guardado);
+
+        Evento resultado = service.guardar(e);
+
+        assertNotNull(resultado);
+        verify(repo, times(1)).save(e);
+    }
+
     // METODO: actualizar(Long id, Evento datosNuevos)
     @Test
     void actualizar_CuandoExisteYPatrocinadoresNoEsNulo_DebeActualizarYGuardar() {
@@ -142,6 +155,21 @@ public class EventoServiceTest {
         assertEquals(1, resultado.getPatrocinadores().size());
         assertEquals(pNew, resultado.getPatrocinadores().get(0));
         assertEquals(existente, pNew.getEvento());
+    }
+
+    @Test
+    void actualizar_CuandoExisteYPatrocinadoresEsNulo_DebeActualizarYGuardarSinNuevosPatrocinadores() {
+        Long id = 1L;
+        Evento existente = Evento.builder().id(id).patrocinadores(new ArrayList<>()).build();
+        Evento datosNuevos = Evento.builder().nombre("New").patrocinadores(null).build();
+
+        when(repo.findById(id)).thenReturn(Optional.of(existente));
+        when(repo.save(existente)).thenReturn(existente);
+
+        Evento resultado = service.actualizar(id, datosNuevos);
+
+        assertNotNull(resultado);
+        assertEquals("New", resultado.getNombre());
     }
 
     // METODO: eliminar(Long id)

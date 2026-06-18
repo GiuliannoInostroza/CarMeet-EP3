@@ -44,7 +44,9 @@ public class PuntuacionController {
 
     @Operation(summary = "Listar todas las puntuaciones", description = "Retorna la lista completa de puntuaciones registradas")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> listar() {
@@ -59,7 +61,9 @@ public class PuntuacionController {
     @Operation(summary = "Obtener puntuacion por ID", description = "Retorna una puntuacion especifica por su identificador")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuacion encontrada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<PuntuacionDTO>>> obtenerPorId(
@@ -72,7 +76,9 @@ public class PuntuacionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Puntuacion registrada exitosamente"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<PuntuacionDTO>>> guardar(
@@ -88,7 +94,9 @@ public class PuntuacionController {
     @Operation(summary = "Actualizar puntuacion", description = "Actualiza los datos de una puntuacion existente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuacion actualizada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<PuntuacionDTO>>> actualizar(
@@ -102,7 +110,9 @@ public class PuntuacionController {
     @Operation(summary = "Eliminar puntuacion", description = "Elimina una puntuacion por su ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuacion eliminada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Puntuacion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
@@ -113,7 +123,9 @@ public class PuntuacionController {
 
     @Operation(summary = "Ranking de un evento", description = "Retorna las puntuaciones de un evento ordenadas de mayor a menor")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ranking obtenido") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ranking obtenido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/evento/{eventoId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> rankingEvento(
@@ -130,7 +142,9 @@ public class PuntuacionController {
 
     @Operation(summary = "Puntuaciones por inscripcion", description = "Retorna todas las puntuaciones de una inscripcion especifica")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuaciones obtenidas") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Puntuaciones obtenidas"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/inscripcion/{inscripcionId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> porInscripcion(
@@ -147,7 +161,9 @@ public class PuntuacionController {
 
     @Operation(summary = "Top 10 global", description = "Retorna las 10 puntuaciones mas altas de todas las competencias")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Top 10 obtenido") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Top 10 obtenido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/ranking")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PuntuacionDTO>>>> top10() {

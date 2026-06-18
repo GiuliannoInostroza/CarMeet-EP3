@@ -44,7 +44,9 @@ public class RecintoController {
 
     @Operation(summary = "Listar todos los recintos", description = "Retorna la lista completa de recintos registrados")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<RecintoDTO>>>> listar() {
@@ -59,7 +61,9 @@ public class RecintoController {
     @Operation(summary = "Obtener recinto por ID", description = "Retorna un recinto especifico por su identificador")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Recinto encontrado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> obtenerPorId(
@@ -71,7 +75,9 @@ public class RecintoController {
     @Operation(summary = "Crear recinto", description = "Crea un nuevo recinto con sus zonas opcionales")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Recinto creado exitosamente"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> guardar(@Valid @RequestBody RecintoDTO req) {
@@ -83,7 +89,9 @@ public class RecintoController {
     @Operation(summary = "Actualizar recinto", description = "Actualiza los datos de un recinto existente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Recinto actualizado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> actualizar(
@@ -97,7 +105,9 @@ public class RecintoController {
     @Operation(summary = "Eliminar recinto", description = "Elimina un recinto por su ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Recinto eliminado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
@@ -109,7 +119,9 @@ public class RecintoController {
     @Operation(summary = "Listar zonas de un recinto", description = "Retorna las zonas asociadas a un recinto especifico")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Zonas obtenidas"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}/zonas")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<ZonaDTO>>>> listarZonas(
@@ -135,7 +147,9 @@ public class RecintoController {
     @Operation(summary = "Consultar disponibilidad de recinto", description = "Retorna capacidad maxima, ocupacion actual y plazas libres")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Disponibilidad obtenida"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}/disponibilidad")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<Map<String, Object>>>> consultarDisponibilidad(
@@ -153,7 +167,9 @@ public class RecintoController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Ingreso registrado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Recinto lleno"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping("/{id}/registrar-ingreso")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> registrarIngreso(
@@ -167,7 +183,9 @@ public class RecintoController {
     @Operation(summary = "Registrar egreso del recinto", description = "Decrementa la ocupacion actual del recinto en 1")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Egreso registrado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Recinto no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping("/{id}/registrar-egreso")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<RecintoDTO>>> registrarEgreso(

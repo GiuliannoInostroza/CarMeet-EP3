@@ -43,7 +43,9 @@ public class PagoController {
 
     @Operation(summary = "Listar todos los pagos", description = "Retorna la lista completa de pagos registrados")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<PagoDTO>>>> listar() {
@@ -58,7 +60,9 @@ public class PagoController {
     @Operation(summary = "Obtener pago por ID", description = "Retorna un pago especifico por su identificador")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pago encontrado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Pago no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Pago no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<PagoDTO>>> obtenerPorId(
@@ -70,7 +74,9 @@ public class PagoController {
     @Operation(summary = "Registrar pago manualmente", description = "Crea un registro de pago directamente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Pago creado exitosamente"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<PagoDTO>>> guardar(@Valid @RequestBody PagoDTO req) {
@@ -82,7 +88,9 @@ public class PagoController {
     @Operation(summary = "Actualizar pago", description = "Actualiza los datos de un pago existente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pago actualizado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Pago no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Pago no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<PagoDTO>>> actualizar(
@@ -96,7 +104,9 @@ public class PagoController {
     @Operation(summary = "Eliminar pago", description = "Elimina un pago por su ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pago eliminado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Pago no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Pago no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
@@ -108,7 +118,9 @@ public class PagoController {
     @Operation(summary = "Obtener pago por Ticket ID", description = "Busca el registro de pago asociado a un ticket especifico")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pago encontrado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "No existe pago para ese ticket") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "No existe pago para ese ticket"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/ticket/{ticketId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<PagoDTO>>> obtenerPorTicket(
@@ -121,7 +133,9 @@ public class PagoController {
     @Operation(summary = "Procesar pago (Mock)", description = "Simula la validacion y procesamiento de un pago en una pasarela externa")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Pago procesado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping("/procesar")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<PagoDTO>>> procesarPago(@Valid @RequestBody PagoDTO req) {
@@ -133,7 +147,9 @@ public class PagoController {
 
     @Operation(summary = "Obtener logs de transaccion", description = "Retorna el historial de estados de un pago especifico")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Logs obtenidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Logs obtenidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}/logs")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<TransaccionLogDTO>>>> obtenerLogs(

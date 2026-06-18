@@ -43,7 +43,9 @@ public class VehiculoController {
 
     @Operation(summary = "Listar todos los vehículos", description = "Retorna la lista completa de vehículos registrados")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<VehiculoDTO>>>> listar() {
@@ -58,7 +60,9 @@ public class VehiculoController {
     @Operation(summary = "Obtener vehículo por ID", description = "Retorna un vehículo especifico por su identificador")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Vehículo encontrado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> obtenerPorId(
@@ -70,7 +74,9 @@ public class VehiculoController {
     @Operation(summary = "Registrar vehículo", description = "Registra un nuevo vehículo en el sistema")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Vehículo creado exitosamente"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR')")
     public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> guardar(@Valid @RequestBody VehiculoDTO req) {
@@ -82,7 +88,9 @@ public class VehiculoController {
     @Operation(summary = "Actualizar vehículo", description = "Actualiza los datos de un vehículo existente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Vehículo actualizado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR')")
     public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> actualizar(
@@ -96,7 +104,9 @@ public class VehiculoController {
     @Operation(summary = "Eliminar vehículo", description = "Elimina un vehículo por su ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Vehículo eliminado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
@@ -108,7 +118,9 @@ public class VehiculoController {
     @Operation(summary = "Listar mantenimientos de un vehículo", description = "Retorna el historial completo de mantenimientos de un vehículo")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Historial obtenido"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}/mantenimientos")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<MantenimientoDTO>>>> listarMantenimientos(
@@ -134,7 +146,9 @@ public class VehiculoController {
     @Operation(summary = "Agregar mantenimiento", description = "Registra un nuevo mantenimiento al vehículo sin reemplazar los existentes")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Mantenimiento agregado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Vehículo no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping("/{id}/mantenimientos")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR')")
     public ResponseEntity<ApiResponse<EntityModel<VehiculoDTO>>> agregarMantenimiento(
@@ -151,7 +165,9 @@ public class VehiculoController {
 
     @Operation(summary = "Buscar vehículos por modelo", description = "Busca vehículos cuyo modelo contenga el texto indicado")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resultados obtenidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resultados obtenidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/buscar")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<VehiculoDTO>>>> buscarPorModelo(

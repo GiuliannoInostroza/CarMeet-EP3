@@ -34,7 +34,9 @@ public class AnalyticsController {
 
     @Operation(summary = "Listar todos los reportes", description = "Retorna la lista completa de reportes generados")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<ReporteDTO>>>> listar() {
@@ -54,7 +56,9 @@ public class AnalyticsController {
     @Operation(summary = "Obtener reporte por ID", description = "Retorna un reporte especifico por su identificador")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reporte encontrado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> obtenerPorId(
@@ -71,7 +75,9 @@ public class AnalyticsController {
     @Operation(summary = "Crear reporte manualmente", description = "Guarda un registro de reporte directamente en base de datos")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Reporte creado exitosamente"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> guardar(@Valid @RequestBody ReporteDTO req) {
@@ -88,7 +94,9 @@ public class AnalyticsController {
     @Operation(summary = "Actualizar reporte", description = "Actualiza los datos de un reporte existente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reporte actualizado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> actualizar(
@@ -107,7 +115,9 @@ public class AnalyticsController {
     @Operation(summary = "Eliminar reporte", description = "Elimina un reporte por su ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reporte eliminado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reporte no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
@@ -119,7 +129,9 @@ public class AnalyticsController {
 
     @Operation(summary = "Generar reporte de evento", description = "Recopila información de tickets e inscripciones asociados a un evento vía WebClient y crea el reporte")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Reporte generado exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Reporte generado exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping("/generar/{eventoId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<ReporteDTO>>> generarReporte(
@@ -139,7 +151,9 @@ public class AnalyticsController {
 
     @Operation(summary = "Resumen de métricas", description = "Calcula métricas agrupadas a partir de todos los reportes almacenados")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resumen de métricas obtenido") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Resumen de métricas obtenido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/metricas/resumen")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<MetricaDTO>>>> resumenMetricas() {

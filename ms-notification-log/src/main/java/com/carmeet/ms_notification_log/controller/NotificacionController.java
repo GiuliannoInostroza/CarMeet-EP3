@@ -43,7 +43,9 @@ public class NotificacionController {
 
     @Operation(summary = "Listar todas las notificaciones", description = "Retorna la lista completa de notificaciones registradas")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<NotificacionDTO>>>> listar() {
@@ -58,7 +60,9 @@ public class NotificacionController {
     @Operation(summary = "Obtener notificacion por ID", description = "Retorna una notificacion especifica por su identificador")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion encontrada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> obtenerPorId(
@@ -70,7 +74,9 @@ public class NotificacionController {
     @Operation(summary = "Crear notificacion directamente", description = "Registra una notificacion sin simular proceso de envio")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Notificacion creada exitosamente"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> guardar(@Valid @RequestBody NotificacionDTO req) {
@@ -82,7 +88,9 @@ public class NotificacionController {
     @Operation(summary = "Actualizar notificacion", description = "Actualiza los datos de una notificacion existente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion actualizada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> actualizar(
@@ -96,7 +104,9 @@ public class NotificacionController {
     @Operation(summary = "Eliminar notificacion", description = "Elimina una notificacion por su ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion eliminado"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
@@ -107,7 +117,9 @@ public class NotificacionController {
 
     @Operation(summary = "Notificaciones por destinatario", description = "Retorna todas las notificaciones enviadas a un usuario especifico")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificaciones obtenidas") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificaciones obtenidas"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/destinatario/{username}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<NotificacionDTO>>>> obtenerPorDestinatario(
@@ -128,7 +140,9 @@ public class NotificacionController {
 
     @Operation(summary = "Enviar notificacion", description = "Simula el envio de la notificacion y la guarda en base de datos")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Notificacion enviada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Notificacion enviada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping("/enviar")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> enviar(@Valid @RequestBody NotificacionDTO req) {
@@ -144,7 +158,9 @@ public class NotificacionController {
     @Operation(summary = "Marcar notificacion como leida", description = "Cambia el estado de una notificacion especifica a leida (true)")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notificacion marcada como leida"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Notificacion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PatchMapping("/{id}/marcar-leida")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<NotificacionDTO>>> marcarLeida(

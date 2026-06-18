@@ -99,7 +99,8 @@ public class AuthController {
         @Operation(summary = "Obtener usuario actual", description = "Devuelve el username y rol del usuario autenticado en la sesion")
         @ApiResponses(value = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Usuario obtenido"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado") })
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
         @GetMapping("/me")
         @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
         public ResponseEntity<ApiResponse<EntityModel<Map<String, String>>>> me(Authentication auth) {
@@ -120,6 +121,7 @@ public class AuthController {
         @Operation(summary = "Promover usuario a ADMIN", description = "Solo ADMIN: cambia el rol de un usuario a ROLE_ADMIN")
         @ApiResponses(value = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Usuario promovido"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Usuario no encontrado") })
         @PutMapping("/promote/{username}")
@@ -143,6 +145,7 @@ public class AuthController {
         @Operation(summary = "Degradar usuario a USER", description = "Solo ADMIN: cambia el rol de un usuario a ROLE_USER")
         @ApiResponses(value = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Usuario degradado"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Usuario no encontrado") })
         @PutMapping("/demote/{username}")
@@ -166,6 +169,7 @@ public class AuthController {
         @Operation(summary = "Listar todos los usuarios", description = "Solo ADMIN: retorna la lista completa de usuarios registrados")
         @ApiResponses(value = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
         @GetMapping("/usuarios")
         @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -195,7 +199,9 @@ public class AuthController {
         @Operation(summary = "Obtener usuario por username", description = "Retorna el username y rol de un usuario especifico")
         @ApiResponses(value = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Usuario encontrado"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Usuario no encontrado") })
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
         @GetMapping("/usuarios/{username}")
         @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
         public ResponseEntity<ApiResponse<EntityModel<Map<String, String>>>> obtenerUsuario(

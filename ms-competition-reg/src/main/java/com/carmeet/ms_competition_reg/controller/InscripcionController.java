@@ -43,7 +43,9 @@ public class InscripcionController {
 
     @Operation(summary = "Listar todas las inscripciones", description = "Retorna la lista completa de inscripciones registradas")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<InscripcionDTO>>>> listar() {
@@ -58,7 +60,9 @@ public class InscripcionController {
     @Operation(summary = "Obtener inscripcion por ID", description = "Retorna una inscripcion especifica por su identificador")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion encontrada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<EntityModel<InscripcionDTO>>> obtenerPorId(
@@ -71,7 +75,9 @@ public class InscripcionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Inscripcion creada exitosamente"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos invalidos"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Evento no encontrado"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR')")
     public ResponseEntity<ApiResponse<EntityModel<InscripcionDTO>>> guardar(
@@ -87,7 +93,9 @@ public class InscripcionController {
     @Operation(summary = "Actualizar inscripcion", description = "Actualiza los datos de una inscripcion existente")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion actualizada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<EntityModel<InscripcionDTO>>> actualizar(
@@ -101,7 +109,9 @@ public class InscripcionController {
     @Operation(summary = "Eliminar inscripcion", description = "Elimina una inscripcion por su ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion eliminada"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> eliminar(
@@ -112,7 +122,9 @@ public class InscripcionController {
 
     @Operation(summary = "Inscripciones por evento", description = "Retorna todas las inscripciones asociadas a un evento")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripciones obtenidas") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripciones obtenidas"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/evento/{eventoId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<InscripcionDTO>>>> porEvento(
@@ -129,7 +141,9 @@ public class InscripcionController {
 
     @Operation(summary = "Inscripciones por vehículo", description = "Retorna todas las inscripciones de un vehiculo especifico")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripciones obtenidas") })
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripciones obtenidas"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado") })
     @GetMapping("/vehiculo/{vehiculoId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_COMPETIDOR', 'ROLE_ESPECTADOR')")
     public ResponseEntity<ApiResponse<CollectionModel<EntityModel<InscripcionDTO>>>> porVehiculo(
@@ -148,6 +162,7 @@ public class InscripcionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion aprobada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "La inscripcion no esta en estado PENDIENTE"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
     @PatchMapping("/{id}/aprobar")
@@ -165,6 +180,7 @@ public class InscripcionController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Inscripcion rechazada"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "La inscripcion no esta en estado PENDIENTE"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado o token invalido"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Acceso denegado"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Inscripcion no encontrada") })
     @PatchMapping("/{id}/rechazar")

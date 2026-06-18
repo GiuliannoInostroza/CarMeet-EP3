@@ -1,24 +1,8 @@
 services:
-  ms-eureka:
-    build: ./ms-eureka
-    container_name: ms-eureka
-    restart: unless-stopped
-    ports:
-    - 8761:8761
-    networks:
-    - carmeet-network
-  ms-gateway:
-    build: ./ms-gateway
-    container_name: ms-gateway
-    restart: unless-stopped
-    ports:
-    - 8777:8777
-    environment:
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-    depends_on:
-    - ms-eureka
-    networks:
-    - carmeet-network
+  # ============================================================
+  # MySQL containers (1 per microservice — Database per Service)
+  # ============================================================
+
   mysql-auth:
     image: mysql:8
     container_name: mysql-auth
@@ -27,32 +11,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_auth
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3307:3306
+      - "3310:3306"
     volumes:
-    - mysql-auth_data:/var/lib/mysql
+      - mysql_auth_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-auth-user:
-    build: ./ms-auth-user
-    container_name: ms-auth-user
-    restart: unless-stopped
-    ports:
-    - 8090:8090
-    environment:
-      DB_HOST: mysql-auth
-      DB_PORT: '3306'
-      DB_NAME: db_auth
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-    depends_on:
-    - mysql-auth
-    - ms-eureka
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-event:
     image: mysql:8
     container_name: mysql-event
@@ -61,32 +27,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_event
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3308:3306
+      - "3311:3306"
     volumes:
-    - mysql-event_data:/var/lib/mysql
+      - mysql_event_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-event-core:
-    build: ./ms-event-core
-    container_name: ms-event-core
-    restart: unless-stopped
-    ports:
-    - 8091:8091
-    environment:
-      DB_HOST: mysql-event
-      DB_PORT: '3306'
-      DB_NAME: db_event
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-    depends_on:
-    - mysql-event
-    - ms-eureka
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-vehicle:
     image: mysql:8
     container_name: mysql-vehicle
@@ -95,32 +43,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_vehicle
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3309:3306
+      - "3312:3306"
     volumes:
-    - mysql-vehicle_data:/var/lib/mysql
+      - mysql_vehicle_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-vehicle-registry:
-    build: ./ms-vehicle-registry
-    container_name: ms-vehicle-registry
-    restart: unless-stopped
-    ports:
-    - 8092:8092
-    environment:
-      DB_HOST: mysql-vehicle
-      DB_PORT: '3306'
-      DB_NAME: db_vehicle
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-    depends_on:
-    - mysql-vehicle
-    - ms-eureka
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-ticketing:
     image: mysql:8
     container_name: mysql-ticketing
@@ -129,38 +59,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_ticketing
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3310:3306
+      - "3313:3306"
     volumes:
-    - mysql-ticketing_data:/var/lib/mysql
+      - mysql_ticketing_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-ticketing:
-    build: ./ms-ticketing
-    container_name: ms-ticketing
-    restart: unless-stopped
-    ports:
-    - 8093:8093
-    environment:
-      DB_HOST: mysql-ticketing
-      DB_PORT: '3306'
-      DB_NAME: db_ticketing
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-      EVENT_CORE_URL: http://ms-event-core:8091
-      PAYMENT_MOCK_URL: http://ms-payment-mock:8097
-      NOTIFICATION_LOG_URL: http://ms-notification-log:8099
-    depends_on:
-    - mysql-ticketing
-    - ms-eureka
-    - ms-event-core
-    - ms-payment-mock
-    - ms-notification-log
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-competition:
     image: mysql:8
     container_name: mysql-competition
@@ -169,38 +75,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_competition
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3311:3306
+      - "3314:3306"
     volumes:
-    - mysql-competition_data:/var/lib/mysql
+      - mysql_competition_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-competition-reg:
-    build: ./ms-competition-reg
-    container_name: ms-competition-reg
-    restart: unless-stopped
-    ports:
-    - 8094:8094
-    environment:
-      DB_HOST: mysql-competition
-      DB_PORT: '3306'
-      DB_NAME: db_competition
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-      EVENT_CORE_URL: http://ms-event-core:8091
-      VEHICLE_REGISTRY_URL: http://ms-vehicle-registry:8092
-      NOTIFICATION_LOG_URL: http://ms-notification-log:8099
-    depends_on:
-    - mysql-competition
-    - ms-eureka
-    - ms-event-core
-    - ms-vehicle-registry
-    - ms-notification-log
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-scoreboard:
     image: mysql:8
     container_name: mysql-scoreboard
@@ -209,34 +91,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_scoreboard
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3312:3306
+      - "3315:3306"
     volumes:
-    - mysql-scoreboard_data:/var/lib/mysql
+      - mysql_scoreboard_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-live-scoreboard:
-    build: ./ms-live-scoreboard
-    container_name: ms-live-scoreboard
-    restart: unless-stopped
-    ports:
-    - 8095:8095
-    environment:
-      DB_HOST: mysql-scoreboard
-      DB_PORT: '3306'
-      DB_NAME: db_scoreboard
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-      COMPETITION_REG_URL: http://ms-competition-reg:8094
-    depends_on:
-    - mysql-scoreboard
-    - ms-eureka
-    - ms-competition-reg
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-venue:
     image: mysql:8
     container_name: mysql-venue
@@ -245,32 +107,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_venue
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3313:3306
+      - "3316:3306"
     volumes:
-    - mysql-venue_data:/var/lib/mysql
+      - mysql_venue_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-venue-capacity:
-    build: ./ms-venue-capacity
-    container_name: ms-venue-capacity
-    restart: unless-stopped
-    ports:
-    - 8096:8096
-    environment:
-      DB_HOST: mysql-venue
-      DB_PORT: '3306'
-      DB_NAME: db_venue
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-    depends_on:
-    - mysql-venue
-    - ms-eureka
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-payment:
     image: mysql:8
     container_name: mysql-payment
@@ -279,32 +123,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_payment
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3314:3306
+      - "3317:3306"
     volumes:
-    - mysql-payment_data:/var/lib/mysql
+      - mysql_payment_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-payment-mock:
-    build: ./ms-payment-mock
-    container_name: ms-payment-mock
-    restart: unless-stopped
-    ports:
-    - 8097:8097
-    environment:
-      DB_HOST: mysql-payment
-      DB_PORT: '3306'
-      DB_NAME: db_payment
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-    depends_on:
-    - mysql-payment
-    - ms-eureka
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-analytics:
     image: mysql:8
     container_name: mysql-analytics
@@ -313,38 +139,14 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_analytics
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3315:3306
+      - "3318:3306"
     volumes:
-    - mysql-analytics_data:/var/lib/mysql
+      - mysql_analytics_data:/var/lib/mysql
     networks:
-    - carmeet-network
-  ms-analytics-report:
-    build: ./ms-analytics-report
-    container_name: ms-analytics-report
-    restart: unless-stopped
-    ports:
-    - 8098:8098
-    environment:
-      DB_HOST: mysql-analytics
-      DB_PORT: '3306'
-      DB_NAME: db_analytics
-      DB_USER: appuser
-      DB_PASSWORD: '1234'
-      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
-      EUREKA_URL: http://ms-eureka:8761/eureka/
-      EVENT_CORE_URL: http://ms-event-core:8091
-      TICKETING_URL: http://ms-ticketing:8093
-      COMPETITION_REG_URL: http://ms-competition-reg:8094
-    depends_on:
-    - mysql-analytics
-    - ms-eureka
-    - ms-event-core
-    - ms-ticketing
-    - ms-competition-reg
-    networks:
-    - carmeet-network
+      - carmeet-network
+
   mysql-notification:
     image: mysql:8
     container_name: mysql-notification
@@ -353,42 +155,276 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db_notification
       MYSQL_USER: appuser
-      MYSQL_PASSWORD: '1234'
+      MYSQL_PASSWORD: 1234
     ports:
-    - 3316:3306
+      - "3319:3306"
     volumes:
-    - mysql-notification_data:/var/lib/mysql
+      - mysql_notification_data:/var/lib/mysql
     networks:
-    - carmeet-network
+      - carmeet-network
+
+  # ============================================================
+  # Infrastructure services
+  # ============================================================
+
+  ms-eureka:
+    build: ./ms-eureka
+    container_name: ms-eureka
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    networks:
+      - carmeet-network
+
+  ms-gateway:
+    build: ./ms-gateway
+    container_name: ms-gateway
+    restart: unless-stopped
+    ports:
+      - "8777:8777"
+    environment:
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+    depends_on:
+      - ms-eureka
+    networks:
+      - carmeet-network
+
+  # ============================================================
+  # Business microservices
+  # ============================================================
+
+  ms-auth-user:
+    build: ./ms-auth-user
+    container_name: ms-auth-user
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      DB_HOST: mysql-auth
+      DB_PORT: 3306
+      DB_NAME: db_auth
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+    depends_on:
+      - mysql-auth
+      - ms-eureka
+    networks:
+      - carmeet-network
+
+  ms-event-core:
+    build: ./ms-event-core
+    container_name: ms-event-core
+    restart: unless-stopped
+    ports:
+      - "8091:8091"
+    environment:
+      DB_HOST: mysql-event
+      DB_PORT: 3306
+      DB_NAME: db_event
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+    depends_on:
+      - mysql-event
+      - ms-eureka
+    networks:
+      - carmeet-network
+
+  ms-vehicle-registry:
+    build: ./ms-vehicle-registry
+    container_name: ms-vehicle-registry
+    restart: unless-stopped
+    ports:
+      - "8092:8092"
+    environment:
+      DB_HOST: mysql-vehicle
+      DB_PORT: 3306
+      DB_NAME: db_vehicle
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+    depends_on:
+      - mysql-vehicle
+      - ms-eureka
+    networks:
+      - carmeet-network
+
+  ms-ticketing:
+    build: ./ms-ticketing
+    container_name: ms-ticketing
+    restart: unless-stopped
+    ports:
+      - "8093:8093"
+    environment:
+      DB_HOST: mysql-ticketing
+      DB_PORT: 3306
+      DB_NAME: db_ticketing
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+      EVENT_CORE_URL: http://ms-event-core:8091
+      PAYMENT_MOCK_URL: http://ms-payment-mock:8097
+      NOTIFICATION_LOG_URL: http://ms-notification-log:8099
+    depends_on:
+      - mysql-ticketing
+      - ms-eureka
+      - ms-event-core
+      - ms-payment-mock
+      - ms-notification-log
+    networks:
+      - carmeet-network
+
+  ms-competition-reg:
+    build: ./ms-competition-reg
+    container_name: ms-competition-reg
+    restart: unless-stopped
+    ports:
+      - "8094:8094"
+    environment:
+      DB_HOST: mysql-competition
+      DB_PORT: 3306
+      DB_NAME: db_competition
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+      EVENT_CORE_URL: http://ms-event-core:8091
+      VEHICLE_REGISTRY_URL: http://ms-vehicle-registry:8092
+      NOTIFICATION_LOG_URL: http://ms-notification-log:8099
+    depends_on:
+      - mysql-competition
+      - ms-eureka
+      - ms-event-core
+      - ms-vehicle-registry
+      - ms-notification-log
+    networks:
+      - carmeet-network
+
+  ms-live-scoreboard:
+    build: ./ms-live-scoreboard
+    container_name: ms-live-scoreboard
+    restart: unless-stopped
+    ports:
+      - "8095:8095"
+    environment:
+      DB_HOST: mysql-scoreboard
+      DB_PORT: 3306
+      DB_NAME: db_scoreboard
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+      COMPETITION_REG_URL: http://ms-competition-reg:8094
+    depends_on:
+      - mysql-scoreboard
+      - ms-eureka
+      - ms-competition-reg
+    networks:
+      - carmeet-network
+
+  ms-venue-capacity:
+    build: ./ms-venue-capacity
+    container_name: ms-venue-capacity
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+    environment:
+      DB_HOST: mysql-venue
+      DB_PORT: 3306
+      DB_NAME: db_venue
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+    depends_on:
+      - mysql-venue
+      - ms-eureka
+    networks:
+      - carmeet-network
+
+  ms-payment-mock:
+    build: ./ms-payment-mock
+    container_name: ms-payment-mock
+    restart: unless-stopped
+    ports:
+      - "8097:8097"
+    environment:
+      DB_HOST: mysql-payment
+      DB_PORT: 3306
+      DB_NAME: db_payment
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+    depends_on:
+      - mysql-payment
+      - ms-eureka
+    networks:
+      - carmeet-network
+
+  ms-analytics-report:
+    build: ./ms-analytics-report
+    container_name: ms-analytics-report
+    restart: unless-stopped
+    ports:
+      - "8098:8098"
+    environment:
+      DB_HOST: mysql-analytics
+      DB_PORT: 3306
+      DB_NAME: db_analytics
+      DB_USER: appuser
+      DB_PASSWORD: 1234
+      JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
+      EUREKA_URL: http://ms-eureka:8761/eureka/
+      EVENT_CORE_URL: http://ms-event-core:8091
+      TICKETING_URL: http://ms-ticketing:8093
+      COMPETITION_REG_URL: http://ms-competition-reg:8094
+    depends_on:
+      - mysql-analytics
+      - ms-eureka
+      - ms-event-core
+      - ms-ticketing
+      - ms-competition-reg
+    networks:
+      - carmeet-network
+
   ms-notification-log:
     build: ./ms-notification-log
     container_name: ms-notification-log
     restart: unless-stopped
     ports:
-    - 8099:8099
+      - "8099:8099"
     environment:
       DB_HOST: mysql-notification
-      DB_PORT: '3306'
+      DB_PORT: 3306
       DB_NAME: db_notification
       DB_USER: appuser
-      DB_PASSWORD: '1234'
+      DB_PASSWORD: 1234
       JWT_SECRET: clave_secreta_carmeet_2026_muy_segura__123456789
       EUREKA_URL: http://ms-eureka:8761/eureka/
     depends_on:
-    - mysql-notification
-    - ms-eureka
+      - mysql-notification
+      - ms-eureka
     networks:
-    - carmeet-network
+      - carmeet-network
+
 networks:
   carmeet-network:
+    driver: bridge
+
 volumes:
-  mysql-auth_data:
-  mysql-event_data:
-  mysql-vehicle_data:
-  mysql-ticketing_data:
-  mysql-competition_data:
-  mysql-scoreboard_data:
-  mysql-venue_data:
-  mysql-payment_data:
-  mysql-analytics_data:
-  mysql-notification_data:
+  mysql_auth_data:
+  mysql_event_data:
+  mysql_vehicle_data:
+  mysql_ticketing_data:
+  mysql_competition_data:
+  mysql_scoreboard_data:
+  mysql_venue_data:
+  mysql_payment_data:
+  mysql_analytics_data:
+  mysql_notification_data:
